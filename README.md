@@ -371,3 +371,127 @@ Provisioned EC2 Server
 The parameterized design allows the infrastructure to be adapted by changing variable values rather than rewriting the Terraform resource definitions.
 
 For example, the EC2 instance type, AWS Region, Availability Zone, instance name, and SSH configuration can be changed through variables while maintaining the same underlying infrastructure structure.
+
+---
+
+## 7. Terraform Provisioners & Server Configuration
+
+This project demonstrates Terraform provisioners as part of the EC2 post-provisioning automation process.
+
+After Terraform creates the EC2 instance, provisioners are used to transfer the deployment script, execute server configuration commands, and capture infrastructure information locally.
+
+### Provisioner Workflow
+
+```text
+EC2 Instance Created
+        |
+        v
+File Provisioner
+        |
+        v
+Deployment Script Transferred
+        |
+        v
+Remote-Exec Provisioner
+        |
+        v
+Deployment Script Executed
+        |
+        v
+Apache Installed
+        |
+        v
+Apache Configured
+        |
+        v
+Apache Started
+        |
+        v
+Local-Exec Provisioner
+        |
+        v
+Private IP Captured Locally
+```
+
+### File Provisioner
+
+The **file provisioner** transfers the deployment script from the local Terraform project directory to the EC2 instance.
+
+The deployment script is transferred to the temporary directory on the Ubuntu server before remote execution.
+
+```hcl
+provisioner "file" {
+  source      = "web.sh"
+  destination = "/tmp/web.sh"
+}
+```
+
+### Remote-Exec Provisioner
+
+The **remote-exec provisioner** connects to the EC2 instance through SSH and executes the required server configuration commands.
+
+The provisioner makes the deployment script executable and then runs it with elevated privileges.
+
+```hcl
+provisioner "remote-exec" {
+  inline = [
+    "chmod +x /tmp/web.sh",
+    "sudo /tmp/web.sh"
+  ]
+}
+```
+
+### Apache Server Configuration
+
+The deployment script automates the installation and configuration of the Apache HTTP Server.
+
+The configuration process includes:
+
+1. Updating the Ubuntu package index.
+2. Installing Apache HTTP Server.
+3. Enabling the Apache service.
+4. Starting the Apache service.
+5. Removing the default Apache web page.
+6. Creating a custom project web page.
+7. Making the application available through HTTP port 80.
+
+### Local-Exec Provisioner
+
+The **local-exec provisioner** executes a command on the local machine after the EC2 instance has been provisioned.
+
+In this project, it captures the EC2 private IP address and writes the value to a local file for verification and operational visibility.
+
+```hcl
+provisioner "local-exec" {
+  command = "echo ${self.private_ip} > private_ips.txt"
+}
+```
+
+### SSH Connection Configuration
+
+The file and remote-exec provisioners use SSH to communicate with the Ubuntu EC2 instance.
+
+The connection configuration uses:
+
+- SSH connection type
+- Ubuntu SSH user
+- EC2 key pair authentication
+- Local private key
+- EC2 public IP address
+
+The private key remains on the local system and is excluded from Git version control.
+
+### Provisioning Outcome
+
+The provisioner workflow successfully automated the transition from a newly provisioned EC2 instance to a running Apache web server.
+
+The resulting infrastructure was validated through:
+
+- Successful SSH connection to the EC2 instance.
+- Apache service status verification.
+- Terraform output verification.
+- Private IP capture.
+- Browser-based HTTP testing.
+- Successful display of the custom Apache web page.
+
+> **Production Consideration:** Terraform provisioners are useful for demonstrations and specific infrastructure tasks, but they are generally considered a last resort for production configuration management. Production environments should preferably use approaches such as cloud-init, EC2 user data, AWS Systems Manager, immutable machine images, configuration-management tools, or dedicated deployment pipelines.
