@@ -222,3 +222,64 @@ The workflow below shows the complete sequence used to provision, configure, val
 | Source Code Management | GitHub | Hosting Terraform code and project documentation |
 | CLI Tools | AWS CLI | AWS resource inspection and troubleshooting |
 | Development Environment | Windows + Git Bash | Local Terraform development and execution |
+
+
+---
+
+## 5. AWS Infrastructure
+
+The project uses a lightweight AWS infrastructure design focused on demonstrating Terraform-based EC2 provisioning, server configuration, network access control, validation, and lifecycle management.
+
+### AWS Resources
+
+| Resource | Configuration | Purpose |
+|---|---|---|
+| Amazon EC2 | t3.micro | Hosts the Ubuntu application and web server |
+| Operating System | Ubuntu Linux | Provides the server operating environment |
+| AWS Security Group | HTTP and SSH access | Controls inbound network traffic |
+| Availability Zone | us-east-1a | Determines the EC2 deployment location |
+| AWS Region | us-east-1 | Primary AWS deployment region |
+| EC2 Key Pair | olajide-key | Provides SSH authentication |
+| Apache HTTP Server | Installed through Terraform automation | Serves the web application |
+
+### EC2 Configuration
+
+The EC2 instance is provisioned using Terraform with configurable deployment parameters.
+
+The following parameters are controlled through Terraform variables:
+
+- AWS Region
+- Availability Zone
+- Amazon Machine Image
+- EC2 instance type
+- Instance name
+- SSH username
+- EC2 key pair
+- Local private key path
+
+The project uses the **t3.micro** instance type with an Ubuntu AMI compatible with the selected EC2 architecture.
+
+### Security Group Configuration
+
+The EC2 security group provides the network access required for infrastructure management and web application validation.
+
+| Protocol | Port | Source | Purpose |
+|---|---:|---|---|
+| TCP | 22 | 0.0.0.0/0 | SSH administration and Terraform remote provisioning |
+| TCP | 80 | 0.0.0.0/0 | HTTP access to the Apache web server |
+
+> **Security Note:** SSH access from 0.0.0.0/0 was used for this hands-on demonstration to simplify remote connectivity and Terraform provisioning. In a production environment, SSH access should be restricted to trusted source IP addresses, VPN/private connectivity, or replaced with AWS Systems Manager Session Manager where appropriate.
+
+### Infrastructure Lifecycle
+
+The AWS resources followed a complete Terraform-managed lifecycle:
+
+1. Infrastructure configuration was defined using Terraform.
+2. Terraform created the EC2 instance and Security Group.
+3. Provisioners configured the EC2 server and Apache web service.
+4. Terraform outputs exposed the EC2 public and private IP addresses.
+5. SSH, Apache service status, and browser-based HTTP access were used for validation.
+6. Terraform managed resource replacement during troubleshooting and reconciliation.
+7. After successful testing, Terraform destroyed the temporary AWS resources.
+
+> **Cost Management:** The infrastructure was intentionally temporary. The EC2 instance and Security Group were destroyed after validation to avoid unnecessary ongoing AWS charges.
