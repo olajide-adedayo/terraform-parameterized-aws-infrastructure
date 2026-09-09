@@ -283,3 +283,91 @@ The AWS resources followed a complete Terraform-managed lifecycle:
 7. After successful testing, Terraform destroyed the temporary AWS resources.
 
 > **Cost Management:** The infrastructure was intentionally temporary. The EC2 instance and Security Group were destroyed after validation to avoid unnecessary ongoing AWS charges.
+
+---
+
+## 6. Terraform Configuration & Parameterization
+
+The infrastructure is designed using Terraform variables to separate deployment parameters from the core resource definitions. This allows the same Terraform configuration to be reused with different deployment values without modifying the infrastructure resource code.
+
+### Parameterized Configuration
+
+The project uses Terraform input variables for key infrastructure and connection parameters, including:
+
+| Variable | Purpose | Example |
+|---|---|---|
+| aws_region | AWS Region for deployment | us-east-1 |
+| availability_zone | Availability Zone for the EC2 instance | us-east-1a |
+| ami_ids | Region-specific Ubuntu AMI mapping | us-east-1 |
+| instance_type | EC2 instance size | t3.micro |
+| instance_name | EC2 Name tag | terraform-parameterized-app-server |
+| ssh_user | SSH user for remote configuration | ubuntu |
+| private_key_path | Local path to the SSH private key | Local Windows path |
+| key_name | AWS EC2 key pair name | olajide-key |
+
+### Variable-Driven Infrastructure
+
+The Terraform configuration uses these variables to control the EC2 deployment.
+
+This approach provides several advantages:
+
+- Reduces hard-coded infrastructure values.
+- Makes the configuration easier to reuse.
+- Simplifies deployment to different AWS Regions.
+- Allows EC2 sizing to be changed without modifying the resource definition.
+- Separates configuration values from infrastructure logic.
+- Improves maintainability and readability.
+- Supports consistent infrastructure deployment across environments.
+
+### Region-Aware AMI Selection
+
+The project uses a Terraform map variable to associate Ubuntu AMI IDs with AWS Regions.
+
+The EC2 resource selects the appropriate AMI based on the configured AWS Region.
+
+This demonstrates how Terraform expressions can be used to create more flexible infrastructure configurations while avoiding unnecessary duplication of resource definitions.
+
+### Example Variable Configuration
+
+A sample configuration file is provided in the repository as:
+
+**terraform.tfvars.example**
+
+The example demonstrates the expected deployment parameters without exposing sensitive credentials or private key material.
+
+### Sensitive Infrastructure Parameters
+
+The project requires the local SSH private key path for Terraform provisioner connectivity.
+
+The actual private key file and environment-specific Terraform variable file are excluded from version control through `.gitignore`.
+
+This prevents sensitive local configuration and credentials from being committed to the public GitHub repository.
+
+> **Security Note:** Private keys, credentials, and other sensitive infrastructure values should never be committed to source control. Production implementations should use secure secret-management solutions and least-privilege access controls.
+
+### Terraform Configuration Flow
+
+```text
+Terraform Variables
+        |
+        v
+Deployment Parameters
+        |
+        v
+Terraform Resource Configuration
+        |
+        v
+AWS Provider
+        |
+        v
+AWS Infrastructure
+        |
+        v
+Provisioned EC2 Server
+```
+
+### Reusability
+
+The parameterized design allows the infrastructure to be adapted by changing variable values rather than rewriting the Terraform resource definitions.
+
+For example, the EC2 instance type, AWS Region, Availability Zone, instance name, and SSH configuration can be changed through variables while maintaining the same underlying infrastructure structure.
