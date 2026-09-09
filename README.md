@@ -495,3 +495,170 @@ The resulting infrastructure was validated through:
 - Successful display of the custom Apache web page.
 
 > **Production Consideration:** Terraform provisioners are useful for demonstrations and specific infrastructure tasks, but they are generally considered a last resort for production configuration management. Production environments should preferably use approaches such as cloud-init, EC2 user data, AWS Systems Manager, immutable machine images, configuration-management tools, or dedicated deployment pipelines.
+
+---
+
+## 8. Deployment & Automation Workflow
+
+The deployment process follows a structured Terraform workflow that provisions the AWS infrastructure, configures the EC2 server, validates the application, and manages the infrastructure lifecycle.
+
+### Deployment Workflow
+
+```text
+                    START
+                      |
+                      v
+             Terraform Configuration
+                      |
+                      v
+               Terraform Init
+                      |
+                      v
+              Terraform Validate
+                      |
+                      v
+                Terraform Plan
+                      |
+                      v
+              Review Changes
+                      |
+                      v
+               Terraform Apply
+                      |
+                      v
+          EC2 Instance Provisioned
+                      |
+                      v
+             File Provisioner
+                      |
+                      v
+          Deployment Script Transfer
+                      |
+                      v
+           Remote-Exec Provisioner
+                      |
+                      v
+       Apache Installation & Configuration
+                      |
+                      v
+            Local-Exec Provisioner
+                      |
+                      v
+           Private IP Captured
+                      |
+                      v
+            Terraform Outputs
+                      |
+                      v
+              Infrastructure
+                Validation
+                      |
+          +-----------+-----------+
+          |           |           |
+          v           v           v
+         SSH       Apache       Browser
+      Validation    Status      Testing
+          |           |           |
+          +-----------+-----------+
+                      |
+                      v
+              Successful Deployment
+                      |
+                      v
+             Terraform Destroy
+                      |
+                      v
+              Resources Removed
+                      |
+                      v
+                     END
+```
+
+### Terraform Initialization
+
+The Terraform working directory is initialized before infrastructure operations begin.
+
+Initialization downloads the required provider plugins and prepares the working directory for Terraform operations.
+
+```text
+terraform init
+```
+
+### Configuration Validation
+
+The Terraform configuration is validated to identify syntax and configuration errors before attempting infrastructure deployment.
+
+```text
+terraform validate
+```
+
+### Infrastructure Planning
+
+Terraform generates an execution plan showing the infrastructure changes that would be made.
+
+```text
+terraform plan
+```
+
+The plan provides an opportunity to review the proposed infrastructure changes before applying them to AWS.
+
+### Infrastructure Provisioning
+
+The infrastructure is provisioned using Terraform.
+
+```text
+terraform apply
+```
+
+Terraform creates the required AWS resources and then executes the configured provisioning workflow.
+
+### Post-Provisioning Automation
+
+After the EC2 instance becomes available, the provisioning process performs the following operations:
+
+1. Transfers the deployment script to the EC2 instance.
+2. Establishes an SSH connection to the server.
+3. Makes the deployment script executable.
+4. Executes the deployment script remotely.
+5. Installs Apache HTTP Server.
+6. Enables and starts the Apache service.
+7. Deploys the custom project web page.
+8. Captures the EC2 private IP address locally.
+
+### Infrastructure Outputs
+
+Terraform exposes the EC2 public and private IP addresses through output values.
+
+These outputs provide useful information for infrastructure verification and operational visibility after deployment.
+
+### Deployment Validation
+
+The deployment was validated at multiple levels.
+
+#### 1. Terraform Validation
+
+Terraform outputs and execution results were reviewed to confirm successful infrastructure provisioning.
+
+#### 2. SSH Validation
+
+SSH connectivity was established successfully with the provisioned Ubuntu EC2 instance.
+
+#### 3. Apache Service Validation
+
+The Apache service was checked on the EC2 instance to confirm that the web server was active and running.
+
+#### 4. Browser Validation
+
+The EC2 public IP address was accessed through a web browser to confirm that the custom Apache web page was successfully served over HTTP.
+
+### Infrastructure Cleanup
+
+After successful testing and validation, the temporary AWS resources were removed using Terraform.
+
+```text
+terraform destroy
+```
+
+The destroy operation successfully removed the EC2 instance and associated Security Group.
+
+> **Lifecycle Principle:** The project demonstrates the complete infrastructure lifecycle of provision, configure, validate, and destroy rather than stopping after initial resource creation.
