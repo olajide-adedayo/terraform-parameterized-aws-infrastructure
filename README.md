@@ -778,3 +778,145 @@ The infrastructure successfully passed the required validation checks.
 | Infrastructure Cleanup | Successful |
 
 > **Validation Outcome:** The project successfully demonstrated an end-to-end Terraform deployment in which AWS infrastructure was provisioned, configured, verified, and subsequently destroyed through controlled infrastructure lifecycle operations.
+
+
+---
+
+## 10. Troubleshooting & Lessons from Deployment
+
+This project involved several real-world infrastructure and connectivity issues during implementation. Troubleshooting these issues provided practical experience with AWS EC2 architecture compatibility, SSH connectivity, DNS resolution, AWS networking, Terraform resource lifecycle behavior, and infrastructure reconciliation.
+
+### Troubleshooting Summary
+
+| Issue | Root Cause | Resolution |
+|---|---|---|
+| EC2 instance creation failed | AMI architecture was incompatible with the selected EC2 instance type | Replaced the incompatible AMI with an architecture-compatible Ubuntu AMI |
+| Terraform could not access the SSH private key | Windows path formatting caused the SSH key path to be interpreted incorrectly | Corrected the Terraform private key path to a compatible Windows path format |
+| EC2 instance had no usable key pair configuration | EC2 key pair was not initially associated with the instance | Added the required EC2 key pair configuration |
+| Terraform AWS API connectivity failed | DNS and network connectivity problems affected communication with AWS endpoints | Investigated DNS resolution and network connectivity before retrying Terraform operations |
+| File provisioner SSH connection timed out | Temporary network connectivity prevented Terraform from reaching the EC2 instance over SSH | Verified security group rules, instance availability, public IP, and SSH connectivity |
+| Provisioner execution failed during EC2 replacement | The replacement instance became temporarily unreachable during provisioning | Verified direct SSH connectivity and used Terraform resource replacement to reconcile infrastructure |
+| HTTP service was initially unreachable | The EC2 public IP and infrastructure state changed during instance lifecycle operations | Revalidated the active instance, public IP, security group configuration, and Apache service |
+| Terraform resource became tainted | Provisioner failure caused Terraform to mark the EC2 resource for replacement | Replaced the resource using Terraform's replacement workflow |
+| Public IP changed after instance lifecycle operations | EC2 public IPv4 addresses can change when instances are stopped and started | Rechecked Terraform outputs and used the current public IP for validation |
+
+### AMI and Instance Architecture Compatibility
+
+One of the first deployment issues occurred because the selected Ubuntu AMI architecture was not compatible with the EC2 instance configuration.
+
+The deployment initially produced an AWS error indicating an invalid combination between the AMI architecture and the selected instance type.
+
+The issue was resolved by selecting an Ubuntu AMI compatible with the architecture supported by the **t3.micro** instance.
+
+This reinforced an important AWS infrastructure principle:
+
+> **EC2 instance types and AMIs must have compatible CPU architectures.**
+
+### SSH Private Key Path Troubleshooting
+
+Terraform provisioners required access to the local EC2 private key.
+
+Because the project was executed from Windows using Git Bash, the local key path required careful configuration.
+
+The Terraform variable was corrected to use a Windows-compatible path representation so that Terraform could successfully locate the private key.
+
+This demonstrated the importance of validating local filesystem paths when Terraform provisioners depend on local authentication material.
+
+### EC2 Key Pair Configuration
+
+During the initial deployment, the EC2 instance did not have the expected SSH key pair configuration.
+
+The Terraform configuration was updated to explicitly associate the AWS EC2 key pair with the instance.
+
+After this change, Terraform was able to provision the instance with the required SSH authentication configuration.
+
+### AWS DNS and Network Connectivity
+
+During deployment, Terraform encountered AWS API connectivity problems, including DNS resolution and connection-reset errors.
+
+The troubleshooting process involved investigating:
+
+- DNS resolution.
+- Local network connectivity.
+- AWS API endpoint accessibility.
+- Terraform provider communication.
+- EC2 network availability.
+- Security group configuration.
+
+This highlighted that infrastructure automation depends not only on correct Terraform configuration but also on reliable connectivity between the local environment, AWS APIs, and provisioned infrastructure.
+
+### Terraform Provisioner Connection Timeout
+
+The file provisioner initially encountered an SSH connection timeout while attempting to reach the EC2 instance.
+
+The investigation included verification of:
+
+- EC2 instance state.
+- EC2 public IP address.
+- Security group rules.
+- SSH port 22 accessibility.
+- EC2 key pair configuration.
+- Direct SSH connectivity.
+
+Direct SSH access was subsequently established successfully, confirming that the EC2 instance and authentication configuration were functional.
+
+### Tainted Resource and Infrastructure Replacement
+
+A failed provisioner execution caused Terraform to mark the EC2 instance for replacement.
+
+Instead of manually modifying the infrastructure, Terraform was used to reconcile the desired state with the actual infrastructure.
+
+The EC2 instance was explicitly replaced using:
+
+```text
+terraform apply -replace=aws_instance.app_server
+
+Terraform successfully completed the replacement:
+
+Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+This demonstrated practical use of Terraform's resource replacement capability during infrastructure recovery.
+
+### Public IP Address Changes
+
+During troubleshooting, the EC2 public IP address changed as the instance lifecycle was modified.
+
+This reinforced an important AWS networking concept:
+
+> **A standard EC2 public IPv4 address is not necessarily persistent across stop and start operations.**
+
+Terraform outputs were therefore used to identify the current public and private IP addresses after successful provisioning.
+
+### Final Infrastructure Validation
+
+After troubleshooting and resource reconciliation, the deployment successfully achieved the intended state:
+
+- EC2 instance provisioned successfully.
+- Correct Ubuntu AMI architecture used.
+- Security group configured for HTTP and SSH access.
+- SSH connectivity established.
+- Terraform provisioners executed successfully.
+- Apache installed and configured.
+- Apache service confirmed running.
+- Private IP captured locally.
+- Terraform public and private IP outputs verified.
+- Custom web page successfully accessed through a browser.
+- Temporary AWS resources successfully destroyed.
+
+### Key Lessons Learned
+
+This project provided practical lessons in:
+
+- AWS EC2 architecture compatibility.
+- Terraform variable-driven infrastructure design.
+- Terraform provisioner behavior.
+- SSH authentication and connectivity troubleshooting.
+- AWS Security Group troubleshooting.
+- DNS and AWS API connectivity troubleshooting.
+- Terraform resource taint and replacement behavior.
+- EC2 public IP lifecycle considerations.
+- Terraform state reconciliation.
+- Infrastructure validation at multiple layers.
+- Cloud cost management through controlled resource cleanup.
+
+> **Engineering Lesson:** Successful Infrastructure as Code implementation requires more than writing Terraform configuration. It also requires understanding cloud networking, operating-system behavior, authentication, resource lifecycle management, troubleshooting methodology, and continuous validation of the desired infrastructure state.
