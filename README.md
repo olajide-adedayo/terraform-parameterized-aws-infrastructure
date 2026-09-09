@@ -39,3 +39,40 @@ The implementation successfully provisioned an AWS EC2 instance, configured Apac
 After successful validation, the temporary AWS resources were **destroyed using Terraform** to demonstrate responsible infrastructure lifecycle management and prevent unnecessary ongoing cloud charges.
 
 > **Portfolio Note:** Terraform provisioners are used intentionally in this project as a learning and demonstration mechanism. For production-grade infrastructure automation, approaches such as cloud-init/user data, AWS Systems Manager, configuration-management tools, immutable machine images, or dedicated deployment pipelines are generally preferable.
+
+ ---
+
+ ## 2. Business & Technical Objectives
+
+### Business Objectives
+
+The project was designed to demonstrate how Infrastructure as Code can improve the consistency, repeatability, and efficiency of cloud infrastructure deployment.
+
+The key business objectives were to:
+
+- Reduce manual infrastructure provisioning and configuration.
+- Improve deployment consistency through declarative infrastructure.
+- Enable repeatable infrastructure deployments using parameterized configuration.
+- Reduce configuration errors associated with manual server setup.
+- Demonstrate controlled infrastructure lifecycle management.
+- Establish a version-controlled approach to cloud infrastructure.
+- Provide clear infrastructure outputs for operational visibility and validation.
+- Demonstrate responsible cloud cost management through infrastructure cleanup after testing.
+
+### Technical Objectives
+
+The technical objectives were to:
+
+- Provision an **Amazon EC2 instance using Terraform**.
+- Parameterize infrastructure using Terraform input variables.
+- Configure AWS infrastructure using reusable Terraform configuration.
+- Configure an **AWS security group** for HTTP and SSH access.
+- Use Terraform's **file provisioner** to transfer a deployment script to the EC2 instance.
+- Use the **remote-exec provisioner** to execute server configuration commands remotely.
+- Use the **local-exec provisioner** to capture infrastructure information locally.
+- Automatically install and configure **Apache HTTP Server**.
+- Define Terraform **output values** for EC2 public and private IP addresses.
+- Validate infrastructure through Terraform outputs, SSH connectivity, service-status checks, and browser-based application testing.
+- Demonstrate Terraform resource replacement and infrastructure reconciliation.
+- Demonstrate complete infrastructure cleanup using `terraform destroy`.
+- Maintain infrastructure source code and project evidence in **Git and GitHub**.
