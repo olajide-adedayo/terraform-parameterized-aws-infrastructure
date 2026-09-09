@@ -76,3 +76,98 @@ The technical objectives were to:
 - Demonstrate Terraform resource replacement and infrastructure reconciliation.
 - Demonstrate complete infrastructure cleanup using `terraform destroy`.
 - Maintain infrastructure source code and project evidence in **Git and GitHub**.
+
+---
+
+## 3. Solution Architecture
+
+The solution uses **Terraform as the Infrastructure as Code control layer** to provision and configure an Amazon EC2 application server on AWS.
+
+The architecture combines parameterized Terraform variables, AWS infrastructure resources, Terraform provisioners, Apache web server configuration, Terraform outputs, and validation steps into a complete infrastructure lifecycle workflow.
+
+### Architecture Components
+
+- **Terraform** — Infrastructure as Code and automation engine
+- **AWS Provider** — Enables Terraform to interact with AWS resources
+- **Amazon EC2** — Hosts the application/web server
+- **AWS Security Group** — Controls inbound HTTP and SSH traffic
+- **Ubuntu Linux** — Operating system used by the EC2 instance
+- **Apache HTTP Server** — Web server installed and configured through Terraform
+- **Terraform File Provisioner** — Transfers the `web.sh` deployment script to the EC2 instance
+- **Terraform Remote-Exec Provisioner** — Executes the deployment script remotely
+- **Terraform Local-Exec Provisioner** — Captures the EC2 private IP address locally
+- **Terraform Outputs** — Expose the EC2 public and private IP addresses after deployment
+- **GitHub** — Stores the version-controlled Terraform source code and project evidence
+
+### Infrastructure Flow
+
+```text
+Terraform Configuration
+        |
+        v
+Input Variables
+        |
+        v
+AWS Provider
+        |
+        v
+Amazon EC2 + Security Group
+        |
+        v
+EC2 Instance Provisioned
+        |
+        +----------------------+
+        |                      |
+        v                      v
+File Provisioner        Remote-Exec Provisioner
+        |                      |
+        v                      v
+Transfer web.sh          Execute web.sh
+                               |
+                               v
+                       Install & Configure
+                       Apache HTTP Server
+                               |
+                               v
+                         Web Application
+                               |
+                               v
+                    Browser-Based Validation
+
+        |
+        v
+Local-Exec Provisioner
+        |
+        v
+Capture Private IP
+        |
+        v
+Terraform Outputs
+        |
+        v
+Verification & Testing
+        |
+        v
+Terraform Destroy
+        |
+        v
+AWS Resources Cleaned Up
+
+---
+### End-to-End Automation Workflow
+
+1. **Initialize Terraform** — Terraform configuration and the required AWS provider are initialized.
+2. **Define Infrastructure Parameters** — Deployment values such as AWS Region, Availability Zone, instance type, instance name, SSH user, key pair, and private key path are supplied through Terraform variables.
+3. **Provision AWS Infrastructure** — Terraform creates the EC2 instance and associated security group according to the declared configuration.
+4. **Transfer Deployment Script** — The Terraform **file provisioner** transfers `web.sh` to the EC2 instance.
+5. **Configure the Server** — The **remote-exec provisioner** makes the script executable and runs it on the EC2 instance.
+6. **Install Apache** — The deployment script installs Apache HTTP Server, enables the service, starts it, and deploys the project web page.
+7. **Capture Infrastructure Data** — The **local-exec provisioner** records the EC2 private IP address in `private_ips.txt`.
+8. **Expose Terraform Outputs** — Terraform returns the EC2 public and private IP addresses through defined output values.
+9. **Validate the Deployment** — The infrastructure is validated through SSH connectivity, Apache service-status verification, and browser-based HTTP testing.
+10. **Manage Infrastructure Lifecycle** — Terraform is used to manage resource replacement when required and to maintain the desired infrastructure state.
+11. **Clean Up Resources** — After successful testing and verification, `terraform destroy` removes the temporary AWS resources.
+
+> **Architecture Note:** Terraform provisioners are used intentionally in this project as a hands-on automation and learning mechanism. For production environments, server configuration would generally be handled through approaches such as cloud-init/user data, AWS Systems Manager, immutable machine images, configuration-management tools, or dedicated deployment pipelines.
+
+> **Cost Management Note:** The AWS infrastructure created for this project was temporary. After successful validation, the EC2 instance and security group were destroyed using Terraform to prevent unnecessary ongoing cloud charges.
