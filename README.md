@@ -81,93 +81,124 @@ The technical objectives were to:
 
 ## 3. Solution Architecture
 
-The solution uses **Terraform as the Infrastructure as Code control layer** to provision and configure an Amazon EC2 application server on AWS.
+The solution uses **Terraform as the Infrastructure as Code (IaC) control layer** to provision and configure an Amazon EC2 application server on AWS.
 
-The architecture combines parameterized Terraform variables, AWS infrastructure resources, Terraform provisioners, Apache web server configuration, Terraform outputs, and validation steps into a complete infrastructure lifecycle workflow.
+The architecture combines parameterized Terraform variables, AWS infrastructure resources, Terraform provisioners, Apache web server configuration, Terraform outputs, validation, troubleshooting, and infrastructure cleanup into a complete cloud infrastructure lifecycle workflow.
 
 ### Architecture Components
 
-- **Terraform** — Infrastructure as Code and automation engine
+- **Terraform** — Infrastructure as Code and infrastructure automation
 - **AWS Provider** — Enables Terraform to interact with AWS resources
-- **Amazon EC2** — Hosts the application/web server
+- **Amazon EC2** — Hosts the application and web server
 - **AWS Security Group** — Controls inbound HTTP and SSH traffic
 - **Ubuntu Linux** — Operating system used by the EC2 instance
 - **Apache HTTP Server** — Web server installed and configured through Terraform
-- **Terraform File Provisioner** — Transfers the `web.sh` deployment script to the EC2 instance
-- **Terraform Remote-Exec Provisioner** — Executes the deployment script remotely
-- **Terraform Local-Exec Provisioner** — Captures the EC2 private IP address locally
-- **Terraform Outputs** — Expose the EC2 public and private IP addresses after deployment
-- **GitHub** — Stores the version-controlled Terraform source code and project evidence
+- **File Provisioner** — Transfers the deployment script to the EC2 instance
+- **Remote-Exec Provisioner** — Executes server configuration commands remotely
+- **Local-Exec Provisioner** — Captures the EC2 private IP address locally
+- **Terraform Outputs** — Expose the EC2 public and private IP addresses
+- **GitHub** — Provides version control and project documentation
 
-### Infrastructure Flow
+### Architecture Diagram
+
+The architecture below shows how Terraform interacts with AWS resources and how the provisioned EC2 server is configured and validated.
 
 ```text
-Terraform Configuration
-        |
-        v
-Input Variables
-        |
-        v
-AWS Provider
-        |
-        v
-Amazon EC2 + Security Group
-        |
-        v
-EC2 Instance Provisioned
-        |
-        +----------------------+
-        |                      |
-        v                      v
-File Provisioner        Remote-Exec Provisioner
-        |                      |
-        v                      v
-Transfer web.sh          Execute web.sh
-                               |
-                               v
-                       Install & Configure
-                       Apache HTTP Server
-                               |
-                               v
-                         Web Application
-                               |
-                               v
-                    Browser-Based Validation
+                    TERRAFORM CONTROL LAYER
+                             |
+                             v
+                    Terraform Configuration
+                             |
+                             v
+                       Input Variables
+                             |
+                             v
+                       AWS Provider
+                             |
+                             v
+                +---------------------------+
+                |       AWS ENVIRONMENT     |
+                |                           |
+                |   Security Group          |
+                |        |                  |
+                |        v                  |
+                |   Amazon EC2              |
+                |        |                  |
+                |        v                  |
+                |   Ubuntu Linux            |
+                |        |                  |
+                |        v                  |
+                |   Apache Web Server       |
+                |        |                  |
+                |        v                  |
+                |   Web Application         |
+                +---------------------------+
+                             |
+                             v
+                     Validation & Testing
+                             |
+                             v
+                      Terraform Outputs
+                             |
+                             v
+                    Infrastructure Cleanup
+```
 
-        |
-        v
-Local-Exec Provisioner
-        |
-        v
-Capture Private IP
-        |
-        v
-Terraform Outputs
-        |
-        v
-Verification & Testing
-        |
-        v
-Terraform Destroy
-        |
-        v
-AWS Resources Cleaned Up
-
----
 ### End-to-End Automation Workflow
 
-1. **Initialize Terraform** — Terraform configuration and the required AWS provider are initialized.
-2. **Define Infrastructure Parameters** — Deployment values such as AWS Region, Availability Zone, instance type, instance name, SSH user, key pair, and private key path are supplied through Terraform variables.
-3. **Provision AWS Infrastructure** — Terraform creates the EC2 instance and associated security group according to the declared configuration.
-4. **Transfer Deployment Script** — The Terraform **file provisioner** transfers `web.sh` to the EC2 instance.
-5. **Configure the Server** — The **remote-exec provisioner** makes the script executable and runs it on the EC2 instance.
-6. **Install Apache** — The deployment script installs Apache HTTP Server, enables the service, starts it, and deploys the project web page.
-7. **Capture Infrastructure Data** — The **local-exec provisioner** records the EC2 private IP address in `private_ips.txt`.
-8. **Expose Terraform Outputs** — Terraform returns the EC2 public and private IP addresses through defined output values.
-9. **Validate the Deployment** — The infrastructure is validated through SSH connectivity, Apache service-status verification, and browser-based HTTP testing.
-10. **Manage Infrastructure Lifecycle** — Terraform is used to manage resource replacement when required and to maintain the desired infrastructure state.
-11. **Clean Up Resources** — After successful testing and verification, `terraform destroy` removes the temporary AWS resources.
+The workflow below shows the complete sequence used to provision, configure, validate, and clean up the AWS infrastructure.
 
-> **Architecture Note:** Terraform provisioners are used intentionally in this project as a hands-on automation and learning mechanism. For production environments, server configuration would generally be handled through approaches such as cloud-init/user data, AWS Systems Manager, immutable machine images, configuration-management tools, or dedicated deployment pipelines.
+```text
+1. Initialize Terraform
+          |
+          v
+2. Define Infrastructure Parameters
+          |
+          v
+3. Provision EC2 and Security Group
+          |
+          v
+4. Transfer Deployment Script
+          |
+          v
+5. Execute Deployment Script Remotely
+          |
+          v
+6. Install and Configure Apache
+          |
+          v
+7. Start Apache Web Service
+          |
+          v
+8. Capture EC2 Private IP Address
+          |
+          v
+9. Generate Terraform Outputs
+          |
+          v
+10. Validate SSH Connectivity
+          |
+          v
+11. Verify Apache Service Status
+          |
+          v
+12. Verify Web Application in Browser
+          |
+          v
+13. Manage Infrastructure Lifecycle
+          |
+          v
+14. Destroy Temporary AWS Resources
+          |
+          v
+       AWS Resources
+          Cleaned Up
+```
+
+### Architecture Note
+
+> **Architecture Note:** Terraform provisioners are used intentionally in this project as a hands-on automation and learning mechanism. For production environments, server configuration would generally be handled through approaches such as cloud-init, user data, AWS Systems Manager, immutable machine images, configuration-management tools, or dedicated deployment pipelines.
+
+### Cost Management Note
 
 > **Cost Management Note:** The AWS infrastructure created for this project was temporary. After successful validation, the EC2 instance and security group were destroyed using Terraform to prevent unnecessary ongoing cloud charges.
