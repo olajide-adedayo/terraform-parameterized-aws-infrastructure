@@ -662,3 +662,119 @@ terraform destroy
 The destroy operation successfully removed the EC2 instance and associated Security Group.
 
 > **Lifecycle Principle:** The project demonstrates the complete infrastructure lifecycle of provision, configure, validate, and destroy rather than stopping after initial resource creation.
+
+
+---
+
+## 9. Validation & Verification
+
+Validation was performed at multiple layers to confirm that the Terraform deployment successfully created the AWS infrastructure, configured the EC2 server, and made the Apache web application accessible.
+
+### Validation Strategy
+
+```text
+Terraform Deployment
+        |
+        v
+Infrastructure Validation
+        |
+        +-------------------+
+        |                   |
+        v                   v
+Terraform Outputs      AWS Resources
+        |                   |
+        +---------+---------+
+                  |
+                  v
+          EC2 Connectivity
+                  |
+                  v
+            SSH Validation
+                  |
+                  v
+        Apache Service Check
+                  |
+                  v
+        HTTP Browser Testing
+                  |
+                  v
+       Successful Deployment
+```
+
+### Terraform Output Verification
+
+Terraform output values were used to confirm the public and private IP addresses assigned to the EC2 instance.
+
+The deployment produced the following values during successful validation:
+
+- **Public IP:** 44.200.225.123
+- **Private IP:** 172.31.3.119
+
+The private IP was also captured locally through the Terraform local-exec provisioner.
+
+### SSH Connectivity Verification
+
+SSH connectivity was successfully established with the provisioned Ubuntu EC2 instance.
+
+This confirmed that:
+
+- The EC2 instance was running.
+- The assigned SSH key pair was correctly configured.
+- Network connectivity to the instance was available.
+- The Terraform provisioning connection parameters were functional.
+
+### Apache Service Verification
+
+The Apache HTTP Server service was checked directly on the EC2 instance.
+
+The service was confirmed to be:
+
+- Installed successfully.
+- Enabled to start automatically.
+- Running successfully.
+- Ready to serve HTTP requests.
+
+### Browser-Based Web Verification
+
+The EC2 public IP address was accessed through a web browser to validate the deployed web application.
+
+The custom project page was successfully displayed, confirming that:
+
+- Apache was serving the application.
+- HTTP port 80 was accessible.
+- The EC2 security group allowed the required HTTP traffic.
+- The server configuration completed successfully.
+- The deployment script executed as expected.
+
+### Validation Evidence
+
+The repository contains screenshots documenting key stages of the deployment and validation process, including:
+
+- Terraform variable configuration and planning.
+- Provisioner execution planning.
+- EC2 resource provisioning.
+- Successful Terraform apply.
+- Terraform output values.
+- Apache service status.
+- Browser-based web application verification.
+
+### Final Validation Result
+
+The infrastructure successfully passed the required validation checks.
+
+| Validation Area | Result |
+|---|---|
+| Terraform Configuration | Successful |
+| EC2 Provisioning | Successful |
+| Security Group Configuration | Successful |
+| SSH Connectivity | Successful |
+| Deployment Script Execution | Successful |
+| Apache Installation | Successful |
+| Apache Service Status | Running |
+| Terraform Outputs | Verified |
+| Private IP Capture | Verified |
+| HTTP Connectivity | Successful |
+| Browser Application Test | Successful |
+| Infrastructure Cleanup | Successful |
+
+> **Validation Outcome:** The project successfully demonstrated an end-to-end Terraform deployment in which AWS infrastructure was provisioned, configured, verified, and subsequently destroyed through controlled infrastructure lifecycle operations.
