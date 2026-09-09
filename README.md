@@ -202,3 +202,23 @@ The workflow below shows the complete sequence used to provision, configure, val
 ### Cost Management Note
 
 > **Cost Management Note:** The AWS infrastructure created for this project was temporary. After successful validation, the EC2 instance and security group were destroyed using Terraform to prevent unnecessary ongoing cloud charges.
+
+---
+
+## 4. Technology Stack
+
+| Category | Technology | Purpose |
+|---|---|---|
+| Infrastructure as Code | Terraform 1.14.8 | Provisioning and managing AWS infrastructure |
+| Cloud Platform | Amazon Web Services (AWS) | Cloud infrastructure hosting |
+| Compute | Amazon EC2 | Hosting the application and web server |
+| Operating System | Ubuntu Linux | Operating system for the EC2 instance |
+| Web Server | Apache HTTP Server | Serving the deployed web application |
+| Cloud Networking | AWS Security Group | Controlling inbound HTTP and SSH traffic |
+| Configuration Automation | Terraform Provisioners | Automating post-provisioning server configuration |
+| Infrastructure Outputs | Terraform Outputs | Exposing EC2 public and private IP addresses |
+| Scripting | Bash | Automating Apache installation and web server configuration |
+| Version Control | Git | Tracking infrastructure code changes |
+| Source Code Management | GitHub | Hosting Terraform code and project documentation |
+| CLI Tools | AWS CLI | AWS resource inspection and troubleshooting |
+| Development Environment | Windows + Git Bash | Local Terraform development and execution |
