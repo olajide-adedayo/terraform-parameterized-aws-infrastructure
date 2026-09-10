@@ -920,3 +920,127 @@ This project provided practical lessons in:
 - Cloud cost management through controlled resource cleanup.
 
 > **Engineering Lesson:** Successful Infrastructure as Code implementation requires more than writing Terraform configuration. It also requires understanding cloud networking, operating-system behavior, authentication, resource lifecycle management, troubleshooting methodology, and continuous validation of the desired infrastructure state.
+
+
+---
+
+## 11. Infrastructure Lifecycle Management
+
+This project demonstrates the complete lifecycle of Terraform-managed AWS infrastructure, from initial configuration and provisioning through validation, troubleshooting, resource replacement, and final cleanup.
+
+### Infrastructure Lifecycle
+
+```text
+Define
+  |
+  v
+Initialize
+  |
+  v
+Validate
+  |
+  v
+Plan
+  |
+  v
+Apply
+  |
+  v
+Provision
+  |
+  v
+Configure
+  |
+  v
+Validate
+  |
+  v
+Troubleshoot
+  |
+  v
+Reconcile
+  |
+  v
+Destroy
+
+### Lifecycle Stages
+
+| Stage | Terraform Operation | Purpose |
+|---|---|---|
+| Define | Terraform configuration | Describe the desired AWS infrastructure |
+| Initialize | `terraform init` | Initialize the working directory and download providers |
+| Validate | `terraform validate` | Check Terraform configuration for errors |
+| Plan | `terraform plan` | Preview proposed infrastructure changes |
+| Apply | `terraform apply` | Create or modify AWS infrastructure |
+| Configure | Terraform provisioners | Configure the provisioned EC2 server |
+| Validate | Outputs, SSH, service checks, browser testing | Confirm the infrastructure and application are working |
+| Troubleshoot | Terraform and AWS troubleshooting | Identify and resolve infrastructure and connectivity issues |
+| Reconcile | `terraform apply -replace=aws_instance.app_server` | Replace and reconcile resources when required |
+| Destroy | `terraform destroy` | Remove temporary AWS infrastructure |
+
+### Infrastructure Provisioning
+
+Terraform was used to create the required AWS resources from the declared infrastructure configuration.
+
+The provisioning process created:
+
+- Amazon EC2 instance.
+- AWS Security Group.
+- Required EC2 networking configuration.
+- SSH access configuration.
+- Apache web server environment.
+
+Terraform then executed the configured provisioners to complete the server configuration.
+
+### Infrastructure Reconciliation
+
+During implementation, a provisioner failure caused the EC2 resource to require replacement.
+
+Terraform was used to reconcile the infrastructure rather than manually recreating the server.
+
+The replacement was performed using:
+
+`terraform apply -replace=aws_instance.app_server`
+
+Terraform successfully created the replacement instance and removed the previous resource.
+
+This demonstrated the ability to use Terraform to bring infrastructure back into the intended state after a failed provisioning operation.
+
+### Infrastructure Validation
+
+After the successful replacement, the infrastructure was validated through multiple methods:
+
+- Terraform output verification.
+- SSH connectivity testing.
+- Apache service-status verification.
+- Private IP capture.
+- Browser-based HTTP testing.
+
+These checks confirmed that the EC2 instance was operational and that the Apache web server was successfully serving the deployed application.
+
+### Infrastructure Destruction
+
+After all validation activities were completed, the temporary AWS infrastructure was removed using:
+
+`terraform destroy`
+
+Terraform successfully destroyed the deployed AWS resources.
+
+The final destroy operation completed with:
+
+`Destroy complete! Resources: 2 destroyed.`
+
+### Lifecycle Management Principles Demonstrated
+
+This project demonstrates several important Infrastructure as Code lifecycle principles:
+
+- Infrastructure should be defined declaratively.
+- Changes should be planned before being applied.
+- Infrastructure should be validated after deployment.
+- Failed resources should be reconciled through controlled Terraform operations.
+- Infrastructure state should remain aligned with the desired configuration.
+- Temporary resources should be destroyed when no longer required.
+- Cloud resources should be managed with cost awareness.
+- Infrastructure changes should be maintained under version control.
+
+> **Engineering Lesson:** Infrastructure as Code is not limited to provisioning resources. A mature Terraform workflow manages the complete infrastructure lifecycle, including creation, configuration, validation, change management, recovery, reconciliation, and controlled destruction.
