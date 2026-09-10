@@ -1044,3 +1044,83 @@ This project demonstrates several important Infrastructure as Code lifecycle pri
 - Infrastructure changes should be maintained under version control.
 
 > **Engineering Lesson:** Infrastructure as Code is not limited to provisioning resources. A mature Terraform workflow manages the complete infrastructure lifecycle, including creation, configuration, validation, change management, recovery, reconciliation, and controlled destruction.
+
+
+---
+
+## 12. Project Structure & File Organization
+
+The project follows a simple and maintainable Terraform structure that separates infrastructure resources, variables, providers, outputs, deployment automation, configuration examples, and project evidence.
+
+### Repository Structure
+
+```text
+terraform-parameterized-aws-infrastructure/
+│
+├── .gitignore
+├── .terraform.lock.hcl
+├── main.tf
+├── outputs.tf
+├── providers.tf
+├── variables.tf
+├── terraform.tfvars.example
+├── web.sh
+│
+└── screenshots/
+    ├── 02-project3-tfvars-variable-plan.png
+    ├── 03-project3-sensitive-variable-plan.png
+    ├── 04-project3-final-variable-plan.png
+    ├── 05-project3-provisioners-plan.png
+    ├── 06-project3-provisioners-key-pair-replacement-plan.png
+    ├── 07-project3-provisioners-security-group-plan.png
+    ├── 08-project3-provisioners-apply-success.png
+    ├── 09-project3-provisioners-web-verification.png
+    ├── 10-project3-outputs-plan.png
+    ├── 11-project3-outputs-result.png
+    ├── 12-project3-apache-service-running.png
+    └── 13-project3-final-apache-web-verification.png
+
+### File Responsibilities
+
+| File / Directory | Purpose |
+|---|---|
+| `main.tf` | Defines the EC2 infrastructure and Terraform provisioners |
+| `providers.tf` | Defines the Terraform and AWS provider configuration |
+| `variables.tf` | Defines configurable Terraform input variables |
+| `outputs.tf` | Defines EC2 public and private IP address outputs |
+| `terraform.tfvars.example` | Provides a safe example of required variable values |
+| `web.sh` | Automates Apache installation and web page configuration |
+| `.gitignore` | Prevents Terraform state, private keys, local variables, and generated files from being committed |
+| `.terraform.lock.hcl` | Locks provider dependency versions for consistent Terraform execution |
+| `screenshots/` | Contains implementation, validation, troubleshooting, and deployment evidence |
+
+### Infrastructure Code Separation
+
+The project separates Terraform responsibilities across multiple files rather than placing the entire configuration into a single file.
+
+This improves:
+
+- Readability.
+- Maintainability.
+- Reusability.
+- Troubleshooting.
+- Infrastructure code organization.
+- Collaboration and code review.
+
+### Security and Repository Hygiene
+
+Sensitive and environment-specific files are intentionally excluded from version control.
+
+The `.gitignore` configuration excludes:
+
+- Terraform state files.
+- Terraform lock information generated during execution.
+- SSH private key files.
+- Local Terraform variable files.
+- Generated private IP output files.
+- Terraform crash logs.
+- Generated planning output.
+
+This ensures that sensitive infrastructure information and local environment-specific configuration are not unnecessarily exposed in the public repository.
+
+> **Engineering Practice:** A well-structured Terraform repository separates infrastructure logic, configuration inputs, outputs, automation scripts, and evidence. This makes the infrastructure easier to understand, maintain, review, and extend.
