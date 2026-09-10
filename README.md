@@ -1100,12 +1100,12 @@ The project separates Terraform responsibilities across multiple files rather th
 
 This improves:
 
-- Readability.
-- Maintainability.
-- Reusability.
-- Troubleshooting.
-- Infrastructure code organization.
-- Collaboration and code review.
+- Readability
+- Maintainability
+- Reusability
+- Troubleshooting
+- Infrastructure code organization
+- Collaboration and code review
 
 ### Security and Repository Hygiene
 
@@ -1113,13 +1113,13 @@ Sensitive and environment-specific files are intentionally excluded from version
 
 The `.gitignore` configuration excludes:
 
-- Terraform state files.
-- Terraform lock information generated during execution.
-- SSH private key files.
-- Local Terraform variable files.
-- Generated private IP output files.
-- Terraform crash logs.
-- Generated planning output.
+- Terraform state files
+- Terraform state lock files
+- SSH private key files
+- Local Terraform variable files
+- Generated private IP output files
+- Terraform crash logs
+- Generated planning output
 
 This ensures that sensitive infrastructure information and local environment-specific configuration are not unnecessarily exposed in the public repository.
 
