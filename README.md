@@ -1888,3 +1888,225 @@ The key cost-management lessons from this project are:
 - Use Infrastructure as Code to make temporary environments easier to reproduce and clean up.
 
 This project demonstrates that cost awareness should be treated as part of infrastructure engineering rather than as an activity performed only after deployment.
+
+
+---
+
+## 15. Testing Strategy & Infrastructure Validation
+
+Infrastructure as Code should be treated as software: changes must be validated before they are considered complete.
+
+For this project, validation was performed at multiple levels — Terraform configuration, infrastructure planning, AWS resource creation, server connectivity, application/service availability, Terraform outputs, and final resource cleanup.
+
+The objective was not simply to confirm that `terraform apply` completed successfully, but to verify that the infrastructure produced the intended operational result.
+
+### 15.1 Validation Approach
+
+The project used a layered validation approach:
+
+| Validation Layer | Validation Performed | Purpose |
+|---|---|---|
+| Terraform Syntax | `terraform validate` | Confirm Terraform configuration is syntactically and structurally valid |
+| Dependency Initialization | `terraform init` | Initialize Terraform and provider dependencies |
+| Infrastructure Planning | `terraform plan` | Preview proposed infrastructure changes before execution |
+| AWS Provisioning | `terraform apply` | Create the declared AWS infrastructure |
+| Provisioner Execution | File and remote-exec provisioners | Configure the EC2 instance and Apache |
+| Terraform Outputs | `terraform output` | Verify generated infrastructure attributes |
+| Network Validation | SSH and HTTP connectivity | Confirm external access to the provisioned server |
+| Operating System Validation | Apache service status | Confirm the web server is running |
+| Application Validation | Browser verification | Confirm the deployed web page is accessible |
+| Lifecycle Validation | `terraform apply -replace` and `terraform destroy` | Verify controlled replacement and cleanup |
+
+### 15.2 Terraform Configuration Validation
+
+Before provisioning infrastructure, the Terraform configuration was validated using:
+
+    terraform validate
+
+This validation checks the Terraform configuration for structural and configuration errors before infrastructure changes are applied.
+
+Successful validation provides an early feedback point and reduces the risk of discovering configuration problems only during deployment.
+
+### 15.3 Infrastructure Planning
+
+Terraform planning was used to inspect the proposed infrastructure changes before applying them:
+
+    terraform plan
+
+The plan provided visibility into the resources Terraform intended to create, modify, replace, or destroy.
+
+This is an important Infrastructure as Code practice because it separates change review from change execution.
+
+The project also used plan output while troubleshooting configuration changes involving:
+
+- AMI selection
+- EC2 instance type
+- EC2 key pair
+- Provisioner configuration
+- SSH connection parameters
+- Terraform variables
+- Resource replacement
+
+### 15.4 EC2 Infrastructure Validation
+
+After successful provisioning, Terraform outputs were used to identify the deployed EC2 instance addresses.
+
+Validated outputs included:
+
+    instance_public_ip = "44.200.225.123"
+    instance_private_ip = "172.31.3.119"
+
+The private IP was also captured by the local-exec provisioner in:
+
+    private_ips.txt
+
+The captured private address matched the Terraform output for the successfully deployed instance.
+
+### 15.5 SSH Connectivity Validation
+
+Direct SSH connectivity was used to verify that the provisioned EC2 instance was reachable using the configured key pair.
+
+The validation confirmed:
+
+- The EC2 instance was running.
+- The expected SSH key pair was associated with the instance.
+- The private key was usable.
+- The Ubuntu SSH user was correct.
+- The instance public IP was reachable.
+- Terraform provisioner connectivity requirements could be reproduced manually.
+
+This manual validation was particularly important during troubleshooting because Terraform provisioners depend on successful network and SSH connectivity.
+
+### 15.6 Apache Service Validation
+
+After Terraform completed the server configuration, the Apache service was checked directly on the EC2 instance.
+
+The service was confirmed to be:
+
+    active (running)
+
+This demonstrated that the remote-exec provisioner successfully executed the server configuration script and that Apache was operational after provisioning.
+
+### 15.7 HTTP Application Validation
+
+The deployed web application was validated through a web browser using the EC2 public IP address.
+
+The custom Apache page displayed:
+
+    Terraform Provisioners Demo
+
+The page also identified the project and confirmed that Apache had been provisioned through the Terraform file and remote-exec provisioners.
+
+This provided an application-level validation rather than relying only on Terraform's infrastructure-level success message.
+
+### 15.8 Provisioner Validation
+
+The project intentionally used multiple Terraform provisioner types.
+
+| Provisioner | Validation |
+|---|---|
+| `file` | Confirmed that `web.sh` was transferred to the EC2 instance |
+| `remote-exec` | Confirmed that the script was executed remotely |
+| `local-exec` | Confirmed that the EC2 private IP was written to `private_ips.txt` |
+
+This demonstrated the complete provisioning workflow from local Terraform execution to remote server configuration and local output generation.
+
+### 15.9 Resource Replacement Validation
+
+The project also validated controlled EC2 resource replacement after troubleshooting provisioner failures.
+
+The following command was used:
+
+    terraform apply -replace=aws_instance.app_server
+
+The replacement completed successfully with:
+
+    Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+The resulting infrastructure was then revalidated using:
+
+- Terraform outputs
+- SSH connectivity
+- Apache service status
+- Browser-based HTTP verification
+
+This demonstrated that Terraform could reconcile the declared configuration after a resource became tainted.
+
+### 15.10 Final Infrastructure Validation
+
+Before cleanup, the final infrastructure state was validated across multiple layers.
+
+| Validation Area | Result |
+|---|---|
+| Terraform configuration | Validated |
+| EC2 provisioning | Successful |
+| EC2 public IP | `44.200.225.123` |
+| EC2 private IP | `172.31.3.119` |
+| SSH connectivity | Successful |
+| Apache service | Active and running |
+| HTTP access | Successfully verified |
+| Custom web page | Successfully displayed |
+| Terraform outputs | Verified |
+| Private IP file | Verified |
+| Resource replacement | Successfully completed |
+
+The validation process confirmed that the infrastructure was operational rather than merely successfully created.
+
+### 15.11 Destruction Validation
+
+After completing the deployment and validation lifecycle, the infrastructure was intentionally removed using:
+
+    terraform destroy
+
+Terraform reported:
+
+    Destroy complete! Resources: 2 destroyed.
+
+This confirmed that the Terraform configuration could also manage the infrastructure teardown lifecycle.
+
+The successful destruction prevented the project resources from remaining active unnecessarily after testing.
+
+### 15.12 Testing Lessons Learned
+
+The project demonstrated several important Infrastructure as Code testing principles:
+
+1. Terraform configuration validation should happen before deployment.
+2. `terraform plan` should be reviewed before applying infrastructure changes.
+3. Successful resource creation does not automatically mean the application is operational.
+4. Infrastructure should be validated at the network, operating system, service, and application levels.
+5. Terraform outputs provide an important source of deployment verification.
+6. Manual SSH testing can isolate infrastructure connectivity problems from Terraform-specific problems.
+7. Provisioner failures require investigation of both Terraform configuration and underlying network connectivity.
+8. Resource replacement should be followed by complete functional validation.
+9. Destruction should be validated as part of the infrastructure lifecycle.
+10. Testing should verify the desired operational state, not just Terraform command completion.
+
+### 15.13 Engineering Lesson
+
+A mature Terraform workflow does not define success as:
+
+    terraform apply = successful
+
+Instead, successful infrastructure delivery means:
+
+    Configuration Validated
+            ↓
+    Infrastructure Plan Reviewed
+            ↓
+    Resources Provisioned
+            ↓
+    Server Configuration Completed
+            ↓
+    Network Connectivity Verified
+            ↓
+    Services Verified
+            ↓
+    Application Verified
+            ↓
+    Outputs Reconciled
+            ↓
+    Lifecycle Tested
+            ↓
+    Infrastructure Cleaned Up
+
+This project therefore demonstrates an end-to-end Infrastructure as Code validation strategy rather than simply demonstrating how to create an EC2 instance with Terraform.
