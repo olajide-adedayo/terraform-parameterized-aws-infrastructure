@@ -1427,3 +1427,227 @@ These exclusions prevent the following categories of information or generated ar
 | `private_ips.txt` | Prevents locally generated infrastructure output from being committed |
 | `crash.log` | Prevents Terraform crash logs from being committed |
 | `crash.*.log` | Prevents additional Terraform crash
+
+
+---
+
+## 13. Security Considerations
+
+Security was considered throughout the design, implementation, validation, and cleanup of the Terraform-managed AWS infrastructure.
+
+Although this project is primarily a Terraform and Infrastructure as Code learning portfolio project, the implementation applies practical security principles that are relevant to real-world AWS environments.
+
+### 13.1 Security Areas Considered
+
+The project addressed security across the following areas:
+
+- SSH access
+- HTTP access
+- EC2 key pair management
+- Private key protection
+- Terraform variable handling
+- Repository hygiene
+- Infrastructure exposure
+- AWS security group configuration
+- Temporary infrastructure cleanup
+- Principle of least privilege considerations
+
+### 13.2 EC2 SSH Access
+
+SSH access was required for Terraform provisioners and direct server validation.
+
+The EC2 instance used an AWS key pair for SSH authentication.
+
+The Terraform configuration referenced the key pair through the `key_name` variable:
+
+    key_name = var.key_name
+
+The private key was supplied locally to Terraform through the configured private-key path:
+
+    private_key = file(var.private_key_path)
+
+The private key itself was not stored in the GitHub repository.
+
+The project's `.gitignore` includes:
+
+    *.pem
+
+This prevents SSH private-key files from being accidentally committed to version control.
+
+### 13.3 Security Group Configuration
+
+The EC2 security group allowed the network traffic required for the project:
+
+| Protocol | Port | Source | Purpose |
+|---|---:|---|---|
+| TCP | 22 | `0.0.0.0/0` | SSH administration and Terraform provisioner connectivity |
+| TCP | 80 | `0.0.0.0/0` | HTTP access for browser-based Apache validation |
+
+The rules were intentionally configured for this demonstration environment so that the EC2 instance could be accessed remotely and the Apache web page could be validated through the public internet.
+
+### 13.4 Production Security Consideration
+
+The security group configuration used in this project is suitable for a controlled learning and demonstration environment but should not be treated as a production security baseline.
+
+In a production environment, SSH access should generally be restricted to trusted administrative networks, VPN ranges, bastion hosts, or other controlled access mechanisms rather than allowing SSH from:
+
+    0.0.0.0/0
+
+Similarly, public HTTP access should only be allowed when the application architecture requires direct public access.
+
+A production architecture could instead use controls such as:
+
+- Restricted administrative CIDR ranges.
+- AWS Systems Manager Session Manager.
+- Bastion hosts where appropriate.
+- Private subnets.
+- Application Load Balancers.
+- HTTPS using TLS certificates.
+- AWS WAF where appropriate.
+- Network segmentation.
+- Security groups based on application tiers.
+
+### 13.5 Private Key Protection
+
+The EC2 private key was treated as sensitive local material.
+
+The key was stored outside the Git repository and referenced through the Terraform variable:
+
+    private_key_path
+
+The repository used an example configuration rather than publishing the user's actual private-key location.
+
+The example configuration uses a placeholder:
+
+    private_key_path = "C:/Users/YOUR_USERNAME/Downloads/olajide-key.pem"
+
+This allows other engineers to understand the required variable without exposing the original local environment.
+
+### 13.6 Terraform Variable Protection
+
+The project uses `terraform.tfvars.example` as a safe template.
+
+The actual `terraform.tfvars` file is excluded through `.gitignore`:
+
+    terraform.tfvars
+
+This provides separation between:
+
+- Version-controlled configuration structure.
+- Environment-specific local values.
+- Sensitive or machine-specific information.
+
+This pattern helps prevent accidental exposure of local configuration when the repository is pushed to GitHub.
+
+### 13.7 Terraform State Security
+
+Terraform state files are excluded from the repository:
+
+    *.tfstate
+    *.tfstate.*
+
+Terraform state can contain infrastructure information and should therefore be handled carefully.
+
+For a production Terraform environment, state should normally be stored in a secured remote backend with appropriate access controls, encryption, locking, and restricted permissions.
+
+This project used local state as part of the hands-on Terraform learning workflow.
+
+### 13.8 Repository Security Hygiene
+
+The repository uses `.gitignore` to prevent unnecessary or sensitive local artifacts from being committed.
+
+The following categories are excluded:
+
+| Category | Example | Security / Operational Reason |
+|---|---|---|
+| Terraform working directory | `.terraform/` | Local provider and working-directory data |
+| Terraform state | `*.tfstate` | May contain infrastructure information |
+| State-related files | `*.tfstate.*` | Prevents related local state artifacts |
+| State lock information | `*.tfstate.lock.info` | Local Terraform locking information |
+| SSH private keys | `*.pem` | Prevents private credentials from being committed |
+| Local variables | `terraform.tfvars` | Prevents environment-specific values from being published |
+| Generated IP output | `private_ips.txt` | Prevents generated local infrastructure information from being committed |
+| Crash logs | `crash.log`, `crash.*.log` | Prevents unnecessary diagnostic artifacts |
+| Generated plan output | `variable-plan-output.txt` | Prevents temporary generated files from entering version control |
+
+The provider lock file `.terraform.lock.hcl` is intentionally retained in version control because it provides dependency consistency rather than containing a secret.
+
+### 13.9 Principle of Least Privilege
+
+The project highlights the importance of limiting access to only what is required.
+
+At the network layer, only the ports required by the demonstration were opened:
+
+- TCP 22 for SSH.
+- TCP 80 for HTTP.
+
+For production implementations, the same principle should be applied to:
+
+- IAM permissions.
+- Security group rules.
+- Network access.
+- Administrative access.
+- Terraform execution roles.
+- Application permissions.
+
+AWS IAM roles should be preferred over long-lived access keys where appropriate.
+
+### 13.10 Infrastructure Exposure
+
+The EC2 instance was intentionally deployed with public connectivity because the project required:
+
+- Terraform SSH provisioner connectivity.
+- Direct SSH validation.
+- Browser-based HTTP validation.
+
+The public IP address was therefore part of the demonstration workflow.
+
+However, public exposure increases the attack surface.
+
+A production architecture should evaluate whether the EC2 instance actually requires a public IP address.
+
+Where public exposure is unnecessary, a stronger architecture could place application instances in private subnets and provide controlled access through services such as:
+
+- Application Load Balancer.
+- NAT Gateway where outbound internet access is required.
+- AWS Systems Manager.
+- VPC endpoints.
+- Bastion or controlled administrative access mechanisms where appropriate.
+
+### 13.11 Cleanup as a Security Practice
+
+Infrastructure cleanup was also part of the security and operational lifecycle.
+
+After completing validation, the infrastructure was destroyed using:
+
+    terraform destroy
+
+The successful destruction removed the temporary EC2 and security group resources.
+
+This reduced the period during which the demonstration infrastructure remained publicly reachable.
+
+It also prevented unnecessary AWS resources from continuing to operate after the project was completed.
+
+### 13.12 Security Improvement Opportunities
+
+If this project were evolved toward a production-oriented implementation, several security improvements could be introduced:
+
+| Current Demonstration Approach | Production-Oriented Improvement |
+|---|---|
+| SSH allowed from `0.0.0.0/0` | Restrict SSH to trusted administrative sources or use SSM Session Manager |
+| HTTP exposed directly from EC2 | Place EC2 behind an Application Load Balancer where appropriate |
+| Direct public EC2 connectivity | Use private subnets where public exposure is unnecessary |
+| Local Terraform state | Use a secured remote backend |
+| Provisioner-based configuration | Prefer cloud-init, SSM, configuration management, or immutable images |
+| Local SSH private key | Use controlled credential management and avoid long-lived credentials where possible |
+| Single EC2 demonstration architecture | Use appropriate high-availability and scaling architecture for production workloads |
+| HTTP validation | Use HTTPS/TLS for production application traffic |
+| Broad security group rules | Apply narrowly scoped network rules based on application requirements |
+
+### 13.13 Security Engineering Lesson
+
+> **Security should be designed into the infrastructure lifecycle rather than added after deployment.**
+
+This project demonstrates practical security awareness through private-key protection, repository hygiene, controlled network access, variable separation, infrastructure cleanup, and recognition of the difference between a learning environment and a production security architecture.
+
+The most important production lesson is that infrastructure should expose only the access that is actually required, while credentials, state, network paths, and administrative access should be protected according to their sensitivity and operational purpose.
