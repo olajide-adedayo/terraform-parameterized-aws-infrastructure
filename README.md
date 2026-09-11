@@ -3335,3 +3335,423 @@ A professional DevOps engineer must understand the complete lifecycle of infrast
 **Why it is needed → How it should be designed → How it should be automated → How it should be validated → How failures should be diagnosed → How resources should be recovered → How security and cost should be managed → How the environment should be documented → How it should be safely removed.**
 
 That complete lifecycle is the primary engineering capability demonstrated by this project.
+
+
+---
+
+## 20. Repository Usage & Deployment Guide
+
+This section provides a practical workflow for engineers who want to review, reproduce, validate, or extend the Terraform project.
+
+The repository is designed so that the infrastructure configuration, variables, provisioning script, validation workflow, and documentation can be reviewed independently and then used together as an Infrastructure as Code implementation.
+
+### 20.1 Repository
+
+GitHub repository:
+
+    https://github.com/olajide-adedayo/terraform-parameterized-aws-infrastructure
+
+The repository contains the Terraform configuration, supporting files, screenshots, and project documentation.
+
+### 20.2 Prerequisites
+
+Before using the project, ensure the following are available:
+
+- AWS account
+- AWS CLI
+- Terraform
+- Git
+- SSH private key associated with the EC2 key pair
+- AWS credentials with sufficient permissions
+- Internet connectivity
+- Windows with Git Bash or an equivalent Unix-like shell environment
+
+The project was implemented using:
+
+- Terraform `1.14.8`
+- AWS
+- Ubuntu
+- Amazon EC2
+- Git Bash on Windows
+
+### 20.3 AWS Authentication
+
+Terraform requires valid AWS credentials before it can communicate with AWS.
+
+Verify the AWS CLI identity with:
+
+    aws sts get-caller-identity
+
+The command should return the AWS account and identity associated with the active credentials.
+
+AWS credentials should never be hard-coded into Terraform configuration files.
+
+### 20.4 Clone the Repository
+
+Clone the repository using Git:
+
+    git clone https://github.com/olajide-adedayo/terraform-parameterized-aws-infrastructure.git
+
+Change into the project directory:
+
+    cd terraform-parameterized-aws-infrastructure
+
+Confirm the repository contents:
+
+    ls
+
+### 20.5 Review the Terraform Configuration
+
+Before making infrastructure changes, review the main Terraform files:
+
+- `main.tf`
+- `variables.tf`
+- `outputs.tf`
+- `providers.tf`
+- `terraform.tfvars.example`
+- `web.sh`
+- `.gitignore`
+
+The purpose of each file is documented in Section 12 of this README.
+
+### 20.6 Create the Local Terraform Variables File
+
+The repository provides:
+
+    terraform.tfvars.example
+
+Create a local `terraform.tfvars` file from the example:
+
+    cp terraform.tfvars.example terraform.tfvars
+
+Update the local values where required.
+
+Example:
+
+    aws_region        = "us-east-1"
+    availability_zone = "us-east-1a"
+    instance_type     = "t3.micro"
+    instance_name     = "terraform-parameterized-app-server"
+    ssh_user          = "ubuntu"
+    private_key_path  = "C:/Users/YOUR_USERNAME/Downloads/olajide-key.pem"
+    key_name          = "olajide-key"
+
+The actual private-key path must match the location of the local SSH private key.
+
+### 20.7 Protect Local Configuration
+
+The local `terraform.tfvars` file should not be committed to Git because it contains environment-specific configuration.
+
+The repository `.gitignore` excludes:
+
+    terraform.tfvars
+
+Private SSH keys are also excluded:
+
+    *.pem
+
+Terraform state files are excluded as well:
+
+    *.tfstate
+    *.tfstate.*
+
+This prevents common sensitive or environment-specific files from being accidentally committed.
+
+### 20.8 Initialize Terraform
+
+Initialize the Terraform working directory:
+
+    terraform init
+
+This downloads the required Terraform provider and initializes the local Terraform working environment.
+
+The Terraform dependency lock file:
+
+    .terraform.lock.hcl
+
+is intentionally tracked in the repository so provider dependency selections can be reproduced more consistently.
+
+### 20.9 Format the Terraform Configuration
+
+Run Terraform formatting:
+
+    terraform fmt
+
+This ensures Terraform configuration follows standard Terraform formatting conventions.
+
+### 20.10 Validate the Configuration
+
+Run:
+
+    terraform validate
+
+Terraform should report that the configuration is valid.
+
+Validation should be performed before creating or modifying AWS infrastructure.
+
+### 20.11 Review the Execution Plan
+
+Generate the Terraform execution plan:
+
+    terraform plan
+
+Review the proposed infrastructure changes before applying them.
+
+The plan should be inspected for:
+
+- Resources to be created
+- Resources to be modified
+- Resources to be destroyed
+- Variable values
+- Security group configuration
+- EC2 configuration
+- Provisioner-related configuration
+- Unexpected changes
+
+A plan should never be treated as an automatic approval to apply infrastructure.
+
+### 20.12 Apply the Infrastructure
+
+After reviewing the plan, deploy the infrastructure:
+
+    terraform apply
+
+Review the proposed changes and confirm the operation when Terraform requests approval.
+
+Terraform then creates the required AWS resources and executes the configured provisioning workflow.
+
+### 20.13 Provisioning Workflow
+
+During deployment, the EC2 instance is created and Terraform performs the configured provisioning actions.
+
+The workflow includes:
+
+    EC2 Instance Creation
+            ↓
+    File Provisioner
+            ↓
+    web.sh copied to EC2
+            ↓
+    Remote-Exec
+            ↓
+    Apache Installation
+            ↓
+    Apache Configuration
+            ↓
+    Apache Startup
+            ↓
+    Local-Exec
+            ↓
+    Private IP Capture
+
+This demonstrates how Terraform can coordinate infrastructure creation with configuration actions.
+
+### 20.14 Retrieve Terraform Outputs
+
+After deployment, retrieve the outputs:
+
+    terraform output
+
+The project exposes:
+
+- `instance_public_ip`
+- `instance_private_ip`
+
+The public IP can be used for SSH and HTTP validation while the infrastructure remains active.
+
+### 20.15 Validate SSH Access
+
+Use the Terraform public IP output to connect to the Ubuntu instance:
+
+    ssh -i "C:/Users/YOUR_USERNAME/Downloads/olajide-key.pem" ubuntu@<PUBLIC_IP>
+
+Replace `<PUBLIC_IP>` with the current Terraform output.
+
+Successful SSH access confirms that:
+
+- The EC2 instance is running.
+- The public IP is reachable.
+- The key pair is correctly configured.
+- The private key is usable.
+- Network access to TCP/22 is available.
+
+### 20.16 Validate Apache
+
+After connecting to the server, verify Apache:
+
+    sudo systemctl status apache2
+
+The service should report an active and running state.
+
+This confirms that the remote provisioning workflow successfully configured the web server.
+
+### 20.17 Validate the Web Application
+
+Open the current EC2 public IP in a browser:
+
+    http://<PUBLIC_IP>
+
+The project should display the custom Apache page containing the Terraform provisioning demonstration content.
+
+This provides an application-level validation beyond Terraform's infrastructure-level success message.
+
+### 20.18 Validate the Captured Private IP
+
+The `local-exec` provisioner creates:
+
+    private_ips.txt
+
+The captured value can be reviewed with:
+
+    cat private_ips.txt
+
+The value should correspond to the EC2 instance private IP reported by Terraform.
+
+### 20.19 Review Terraform State
+
+List Terraform-managed resources:
+
+    terraform state list
+
+The project demonstrated state entries including:
+
+    aws_instance.app_server
+    aws_security_group.app_server
+
+Terraform state provides the mapping between the configuration and the infrastructure resources managed by Terraform.
+
+### 20.20 Controlled Resource Replacement
+
+If the EC2 resource requires controlled replacement, Terraform can replace the specific resource using:
+
+    terraform apply -replace=aws_instance.app_server
+
+This approach allows Terraform to perform the replacement while maintaining awareness of the resource in its state.
+
+The project successfully demonstrated this workflow during troubleshooting.
+
+### 20.21 Revalidate After Replacement
+
+After replacement, retrieve the current outputs:
+
+    terraform output
+
+The EC2 public IP may have changed.
+
+Always use the current Terraform output rather than assuming a previous public IP remains valid.
+
+Repeat the validation workflow:
+
+1. Retrieve the current public IP.
+2. Test SSH connectivity.
+3. Verify Apache.
+4. Verify HTTP accessibility.
+5. Confirm the Terraform outputs.
+6. Confirm the application page.
+
+### 20.22 Destroy the Infrastructure
+
+When the environment is no longer required, destroy it:
+
+    terraform destroy
+
+Review the proposed resources and confirm the destruction.
+
+The project successfully completed cleanup with:
+
+    Destroy complete! Resources: 2 destroyed.
+
+Destroying temporary infrastructure is an important cloud cost-control and lifecycle-management practice.
+
+### 20.23 Recommended Reproduction Workflow
+
+For another engineer reproducing this project, the recommended workflow is:
+
+    Clone Repository
+          ↓
+    Configure AWS Credentials
+          ↓
+    Review Terraform Files
+          ↓
+    Create terraform.tfvars
+          ↓
+    Verify SSH Key
+          ↓
+    terraform init
+          ↓
+    terraform fmt
+          ↓
+    terraform validate
+          ↓
+    terraform plan
+          ↓
+    Review Plan
+          ↓
+    terraform apply
+          ↓
+    terraform output
+          ↓
+    SSH Validation
+          ↓
+    Apache Validation
+          ↓
+    Browser Validation
+          ↓
+    Review Terraform State
+          ↓
+    terraform destroy
+
+### 20.24 Important Operational Notes
+
+This repository is a portfolio and learning implementation.
+
+Before using the architecture in a production environment, additional engineering controls should be considered, including:
+
+- Remote Terraform state
+- State locking/concurrency protection
+- IAM least privilege
+- Restricted SSH access or AWS Systems Manager
+- Private subnets
+- HTTPS
+- Load balancing
+- High availability
+- Auto Scaling
+- Centralized logging
+- Monitoring and alerting
+- Secrets management
+- CI/CD
+- Security scanning
+- Policy validation
+- Backup and disaster recovery planning
+
+These improvements are discussed in Section 17.
+
+### 20.25 Reproduction Principle
+
+The purpose of this guide is not simply to provide commands.
+
+It establishes a repeatable operational process:
+
+> **Prepare → Review → Validate → Plan → Apply → Verify → Operate → Destroy**
+
+Following this workflow reduces accidental infrastructure changes and encourages disciplined Infrastructure as Code practices.
+
+### 20.26 Engineering Lesson
+
+A professional Terraform repository should be usable by someone other than its original author.
+
+A strong repository therefore needs more than valid `.tf` files.
+
+It should provide enough information for another engineer to understand:
+
+- What the project does.
+- What is required before deployment.
+- How variables are configured.
+- How infrastructure is deployed.
+- How the deployment is validated.
+- How failures can be investigated.
+- How resources can be replaced.
+- How infrastructure can be safely destroyed.
+- Which areas require additional production hardening.
+
+This repository is structured to provide that complete operational path.
