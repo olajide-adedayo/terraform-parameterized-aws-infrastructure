@@ -2397,3 +2397,360 @@ Together, the repository provides:
 → **Application Validation**
 
 This combination demonstrates practical Infrastructure as Code implementation rather than a code-only Terraform example.
+
+
+---
+
+## 17. Limitations, Production Readiness & Future Improvements
+
+This project was intentionally designed as a focused Terraform Infrastructure as Code implementation demonstrating parameterization, EC2 provisioning, Terraform provisioners, outputs, lifecycle management, troubleshooting, validation, security awareness, and cost management.
+
+It successfully demonstrates the core Terraform workflow, but the architecture is not intended to represent a complete production-grade application platform.
+
+Recognizing these boundaries is an important part of professional infrastructure engineering.
+
+---
+
+### 17.1 Current Project Scope
+
+The implemented architecture consists primarily of:
+
+- Terraform
+- Amazon EC2
+- Ubuntu Linux
+- Apache HTTP Server
+- EC2 security group
+- SSH key-pair authentication
+- Terraform variables
+- Terraform outputs
+- Terraform file provisioner
+- Terraform remote-exec provisioner
+- Terraform local-exec provisioner
+
+The project was intentionally kept focused so that the Terraform lifecycle and provisioning workflow could be demonstrated clearly.
+
+---
+
+### 17.2 Production Readiness Assessment
+
+The current implementation is suitable as a hands-on Infrastructure as Code portfolio project and development environment demonstration.
+
+However, several areas would require additional engineering before using a similar architecture for a production workload.
+
+| Area | Current Implementation | Production Improvement |
+|---|---|---|
+| Compute | Single EC2 instance | Auto Scaling Group across multiple Availability Zones |
+| Availability | Single-instance architecture | Multi-AZ architecture |
+| Load Balancing | Direct access to EC2 public IP | Application Load Balancer |
+| Network Architecture | Demonstration-oriented access | Public/private subnet segmentation |
+| SSH Access | SSH through security group | AWS Systems Manager Session Manager or restricted administrative access |
+| Web Access | HTTP | HTTPS using TLS certificates |
+| Security Group | Demonstration access rules | Least-privilege source restrictions |
+| Secrets | Local Terraform configuration | AWS Secrets Manager or AWS Systems Manager Parameter Store where appropriate |
+| Terraform State | Local state for the project | Remote state with appropriate locking and access controls |
+| Server Configuration | Terraform provisioners | User data/cloud-init, SSM, configuration management, immutable images, or deployment automation |
+| Observability | Manual validation | CloudWatch metrics, logs, alarms, and centralized monitoring |
+| Deployment | Manual Terraform execution | CI/CD pipeline with controlled environments |
+| Cost Management | Manual cleanup | Budgets, cost monitoring, lifecycle policies, and automated governance |
+| Disaster Recovery | Not implemented | Backup, recovery, and disaster-recovery strategy |
+
+---
+
+### 17.3 Terraform Provisioner Limitation
+
+Terraform provisioners were intentionally used in this project to demonstrate:
+
+- `file`
+- `remote-exec`
+- `local-exec`
+
+They provide useful hands-on experience with Terraform-driven post-provisioning actions.
+
+However, provisioners are generally not the preferred mechanism for configuring production servers when more maintainable alternatives are available.
+
+For production environments, configuration may instead be handled through:
+
+- EC2 user data
+- cloud-init
+- AWS Systems Manager
+- Ansible
+- Configuration management platforms
+- Immutable machine images
+- CI/CD pipelines
+- Container-based deployment models
+
+The engineering principle is to keep infrastructure provisioning predictable and separate from application configuration and deployment responsibilities where practical.
+
+---
+
+### 17.4 Single-Instance Architecture Limitation
+
+The project uses a single EC2 instance.
+
+This is appropriate for demonstrating the Terraform workflow, but a single instance introduces a single point of failure.
+
+A production application requiring high availability would typically require a more resilient architecture such as:
+
+    Application Load Balancer
+              ↓
+       Auto Scaling Group
+          ↙          ↘
+       EC2           EC2
+         ↓             ↓
+       AZ-A           AZ-B
+
+The exact architecture would depend on application requirements, traffic patterns, availability targets, and operational constraints.
+
+---
+
+### 17.5 Network Architecture Improvement
+
+The demonstration architecture intentionally keeps the network design simple.
+
+A production AWS architecture would typically separate externally accessible components from internal application resources.
+
+A more mature design could use:
+
+    Internet
+       ↓
+    Application Load Balancer
+       ↓
+    Private Application Subnets
+       ↓
+    Internal Services
+       ↓
+    Managed Data Services
+
+This reduces unnecessary direct exposure of application servers and provides greater control over network traffic.
+
+---
+
+### 17.6 SSH Access Improvement
+
+The project uses SSH because Terraform's remote-exec provisioner requires an SSH connection to configure the Ubuntu instance.
+
+For production environments, direct public SSH access should generally be avoided where possible.
+
+Possible alternatives include:
+
+- AWS Systems Manager Session Manager
+- Restricted administrative networks
+- Bastion architecture where justified
+- Private subnets
+- VPN connectivity
+- Identity-based administrative access
+
+This project therefore demonstrates SSH-based provisioning for educational and portfolio purposes rather than recommending unrestricted public SSH access as a production standard.
+
+---
+
+### 17.7 State Management Improvement
+
+The project demonstrates Terraform state locally and excludes Terraform state files from Git through `.gitignore`.
+
+For a team-managed production environment, Terraform state should normally be stored remotely with appropriate access control and concurrency protection.
+
+A production-oriented implementation could use:
+
+- Amazon S3 for remote state storage
+- Appropriate state access controls
+- State locking/concurrency protection according to the selected Terraform backend approach
+- Separate state for different environments or infrastructure boundaries
+
+Terraform state should be treated as an important infrastructure artifact and protected accordingly.
+
+---
+
+### 17.8 CI/CD Integration
+
+The current project is executed manually from the Terraform working environment.
+
+A natural next step would be integrating the Terraform workflow into a CI/CD pipeline.
+
+A mature workflow could follow:
+
+    Developer
+        ↓
+    Git Push / Pull Request
+        ↓
+    Automated Validation
+        ↓
+    terraform fmt
+        ↓
+    terraform validate
+        ↓
+    Security / Policy Checks
+        ↓
+    terraform plan
+        ↓
+    Review / Approval
+        ↓
+    terraform apply
+        ↓
+    Deployment Validation
+
+This would provide automated and repeatable infrastructure delivery while introducing controlled change management.
+
+---
+
+### 17.9 Security Improvements
+
+The demonstration environment intentionally uses broad access rules to simplify hands-on testing.
+
+A production implementation should improve the security posture by applying:
+
+- Least-privilege security group rules.
+- Restricted administrative access.
+- Private subnets where appropriate.
+- HTTPS instead of plain HTTP.
+- Centralized secrets management.
+- IAM least privilege.
+- Encryption at rest and in transit.
+- Centralized logging.
+- Security monitoring.
+- Regular patching.
+- Infrastructure policy validation.
+
+Security should remain part of the infrastructure lifecycle rather than being treated as a final deployment step.
+
+---
+
+### 17.10 Observability Improvements
+
+The project validates the server manually through Terraform outputs, SSH, service status, and browser testing.
+
+A production environment would require continuous observability rather than one-time validation.
+
+Potential improvements include:
+
+- CloudWatch metrics
+- CloudWatch Logs
+- Application logs
+- Health checks
+- CloudWatch alarms
+- Infrastructure dashboards
+- Centralized log aggregation
+- Alerting and incident-response integration
+
+The objective would be to detect infrastructure and application problems after deployment rather than relying entirely on manual inspection.
+
+---
+
+### 17.11 Cost Optimization Improvements
+
+The project already demonstrates cost awareness through:
+
+- Small EC2 instance sizing.
+- Temporary infrastructure usage.
+- Explicit Terraform destruction.
+- Avoidance of unnecessary resources.
+
+For larger environments, cost optimization could be extended through:
+
+- AWS Cost Explorer
+- AWS Budgets
+- Compute right-sizing
+- Savings Plans
+- Appropriate storage lifecycle policies
+- Data-transfer analysis
+- NAT Gateway cost analysis
+- VPC endpoint evaluation
+- Automated cleanup of temporary resources
+- Environment-specific resource controls
+
+Cost optimization should be evaluated together with availability, performance, security, and operational requirements.
+
+---
+
+### 17.12 Future Project Extensions
+
+The Terraform implementation provides a foundation for progressively more advanced AWS Infrastructure as Code projects.
+
+Potential extensions include:
+
+1. Build a reusable VPC module.
+2. Create public and private subnets.
+3. Add an S3 Gateway VPC Endpoint.
+4. Deploy an Application Load Balancer.
+5. Introduce an Auto Scaling Group.
+6. Move application servers into private subnets.
+7. Introduce AWS Systems Manager Session Manager.
+8. Implement remote Terraform state.
+9. Add environment separation such as development, staging, and production.
+10. Add CI/CD automation for Terraform.
+11. Add infrastructure security scanning.
+12. Add policy-as-code validation.
+13. Introduce CloudWatch monitoring and alerting.
+14. Deploy a more complete multi-tier AWS application architecture.
+
+These extensions would build directly on the Infrastructure as Code principles demonstrated in this project.
+
+---
+
+### 17.13 What This Project Demonstrates
+
+Despite its intentionally focused scope, the project demonstrates several practical DevOps engineering capabilities:
+
+- Infrastructure as Code with Terraform.
+- AWS EC2 provisioning.
+- Parameterized Terraform configuration.
+- Terraform variable management.
+- Terraform outputs.
+- Terraform provisioners.
+- SSH-based infrastructure connectivity.
+- Automated Linux server configuration.
+- Apache deployment.
+- Infrastructure validation.
+- Resource replacement and reconciliation.
+- Terraform lifecycle management.
+- Troubleshooting of real infrastructure failures.
+- Security awareness.
+- Cost awareness.
+- Git/GitHub-based infrastructure documentation.
+
+---
+
+### 17.14 Engineering Maturity Demonstrated
+
+An important engineering lesson from this project is that production readiness is not determined only by whether an application can be deployed successfully.
+
+A professional infrastructure engineer must also evaluate:
+
+    Reliability
+    Security
+    Scalability
+    Observability
+    Cost
+    Maintainability
+    Recoverability
+    Operational Overhead
+
+The current project deliberately focuses on Terraform fundamentals and EC2 automation while documenting where a production architecture would require additional engineering.
+
+This distinction demonstrates the ability to evaluate infrastructure beyond simply making it work.
+
+---
+
+### 17.15 Engineering Lesson
+
+The goal of Infrastructure as Code is not merely to automate resource creation.
+
+The larger objective is to create infrastructure that is:
+
+**Repeatable**
+
+**Reviewable**
+
+**Version Controlled**
+
+**Testable**
+
+**Recoverable**
+
+**Secure**
+
+**Cost-Aware**
+
+**Operationally Maintainable**
+
+This project establishes those principles at a focused EC2 level and provides a foundation for progressively more advanced AWS infrastructure automation.
