@@ -782,7 +782,7 @@ The infrastructure successfully passed the required validation checks.
 
 ---
 
-10. Troubleshooting & Lessons from Deployment
+## 10. Troubleshooting & Lessons from Deployment
 
 This project involved several real-world infrastructure and connectivity issues during AWS provisioning and Terraform execution. Troubleshooting covered EC2 architecture compatibility, SSH connectivity, Windows path handling, AWS networking and DNS resolution, Terraform provisioner behavior, resource replacement, public IP lifecycle, and infrastructure state reconciliation.
 
