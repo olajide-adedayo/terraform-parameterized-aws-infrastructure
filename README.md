@@ -8,29 +8,29 @@
 
 ---
 
+## Table of Contents
 
-Table of Contents
+- [1. Project Overview](#1-project-overview)
+- [2. Business & Technical Objectives](#2-business--technical-objectives)
+- [3. Solution Architecture](#3-solution-architecture)
+- [4. Technology Stack](#4-technology-stack)
+- [5. AWS Infrastructure](#5-aws-infrastructure)
+- [6. Terraform Configuration & Parameterization](#6-terraform-configuration--parameterization)
+- [7. Terraform Provisioners & Server Configuration](#7-terraform-provisioners--server-configuration)
+- [8. Deployment & Automation Workflow](#8-deployment--automation-workflow)
+- [9. Validation & Verification](#9-validation--verification)
+- [10. Troubleshooting & Lessons from Deployment](#10-troubleshooting--lessons-from-deployment)
+- [11. Infrastructure Lifecycle Management](#11-infrastructure-lifecycle-management)
+- [12. Project Structure & File Organization](#12-project-structure--file-organization)
+- [13. Security Considerations](#13-security-considerations)
+- [14. Cost Optimization & Operational Considerations](#14-cost-optimization--operational-considerations)
+- [15. Testing Strategy & Infrastructure Validation](#15-testing-strategy--infrastructure-validation)
+- [16. Implementation Evidence & Screenshots](#16-implementation-evidence--screenshots)
+- [17. Limitations, Production Readiness & Future Improvements](#17-limitations-production-readiness--future-improvements)
+- [18. Professional DevOps & IaC Practices Demonstrated](#18-professional-devops--iac-practices-demonstrated)
+- [19. Project Completion Summary & Key Takeaways](#19-project-completion-summary--key-takeaways)
+- [20. Repository Usage & Deployment Guide](#20-repository-usage--deployment-guide)
 
-- "1. Project Overview" (#1-project-overview)
-- "2. Business & Technical Objectives" (#2-business--technical-objectives)
-- "3. Solution Architecture" (#3-solution-architecture)
-- "4. Technology Stack" (#4-technology-stack)
-- "5. AWS Infrastructure" (#5-aws-infrastructure)
-- "6. Terraform Configuration & Parameterization" (#6-terraform-configuration--parameterization)
-- "7. Terraform Provisioners & Server Configuration" (#7-terraform-provisioners--server-configuration)
-- "8. Deployment & Automation Workflow" (#8-deployment--automation-workflow)
-- "9. Validation & Verification" (#9-validation--verification)
-- "10. Troubleshooting & Lessons from Deployment" (#10-troubleshooting--lessons-from-deployment)
-- "11. Infrastructure Lifecycle Management" (#11-infrastructure-lifecycle-management)
-- "12. Project Structure & File Organization" (#12-project-structure--file-organization)
-- "13. Security Considerations" (#13-security-considerations)
-- "14. Cost Optimization & Operational Considerations" (#14-cost-optimization--operational-considerations)
-- "15. Testing Strategy & Infrastructure Validation" (#15-testing-strategy--infrastructure-validation)
-- "16. Implementation Evidence & Screenshots" (#16-implementation-evidence--screenshots)
-- "17. Limitations, Production Readiness & Future Improvements" (#17-limitations-production-readiness--future-improvements)
-- "18. Professional DevOps & IaC Practices Demonstrated" (#18-professional-devops--iac-practices-demonstrated)
-- "19. Project Completion Summary & Key Takeaways" (#19-project-completion-summary--key-takeaways)
-- "20. Repository Usage & Deployment Guide" (#20-repository-usage--deployment-guide)
 
 ## 1. Project Overview
 
