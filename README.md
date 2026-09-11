@@ -1289,3 +1289,141 @@ This project demonstrated the following Infrastructure as Code lifecycle princip
 > **Infrastructure as Code is not limited to provisioning resources. A mature DevOps workflow manages the complete infrastructure lifecycle — definition, planning, provisioning, configuration, validation, troubleshooting, reconciliation, change management, and controlled destruction.**
 
 This project demonstrated that Terraform can serve as a consistent control mechanism for managing infrastructure throughout its operational lifecycle rather than being used only as a tool for initial resource creation.
+
+
+---
+
+## 12. Project Structure & File Organization
+
+The project follows a structured Terraform repository layout that separates infrastructure definitions, configuration inputs, outputs, server configuration, dependency locking, and supporting implementation evidence.
+
+This organization improves readability, maintainability, troubleshooting, collaboration, and code review while keeping sensitive or machine-generated files out of version control.
+
+### 12.1 Repository Structure
+
+The project repository is organized as follows:
+
+    terraform-parameterized-aws-infrastructure/
+    │
+    ├── .gitignore
+    ├── .terraform.lock.hcl
+    ├── main.tf
+    ├── outputs.tf
+    ├── providers.tf
+    ├── variables.tf
+    ├── terraform.tfvars.example
+    ├── web.sh
+    │
+    └── screenshots/
+        ├── 02-project3-tfvars-variable-plan.png
+        ├── 03-project3-sensitive-variable-plan.png
+        ├── 04-project3-final-variable-plan.png
+        ├── 05-project3-provisioners-plan.png
+        ├── 06-project3-provisioners-key-pair-replacement-plan.png
+        ├── 07-project3-provisioners-security-group-plan.png
+        ├── 08-project3-provisioners-apply-success.png
+        ├── 09-project3-provisioners-web-verification.png
+        ├── 10-project3-outputs-plan.png
+        ├── 11-project3-outputs-result.png
+        ├── 12-project3-apache-service-running.png
+        └── 13-project3-final-apache-web-verification.png
+
+### 12.2 File Responsibilities
+
+| File / Directory | Purpose |
+|---|---|
+| `main.tf` | Defines the EC2 infrastructure and Terraform provisioners used to configure the application server |
+| `providers.tf` | Defines the Terraform and AWS provider configuration |
+| `variables.tf` | Defines configurable Terraform input variables used to parameterize the infrastructure |
+| `outputs.tf` | Defines Terraform outputs for the EC2 public and private IP addresses |
+| `terraform.tfvars.example` | Provides a safe example of the required Terraform variable values without exposing the user's actual local configuration |
+| `web.sh` | Automates Apache installation, service configuration, and creation of the demonstration web page |
+| `.gitignore` | Prevents Terraform state files, SSH private keys, local variable files, generated files, and crash logs from being committed |
+| `.terraform.lock.hcl` | Locks Terraform provider dependency versions to support consistent provider selection |
+| `screenshots/` | Stores implementation, validation, troubleshooting, deployment, and verification evidence for the portfolio project |
+
+### 12.3 Infrastructure Code Separation
+
+The Terraform configuration is separated into logical files according to responsibility.
+
+This separation provides several engineering benefits:
+
+- **Readability** — each configuration responsibility can be located quickly.
+- **Maintainability** — changes can be made to the appropriate configuration area without unnecessarily modifying unrelated files.
+- **Reusability** — variables allow infrastructure values to be changed without rewriting the core resource definition.
+- **Troubleshooting** — infrastructure configuration, variables, outputs, and provider settings can be investigated independently.
+- **Organization** — the repository follows a predictable Infrastructure as Code structure.
+- **Collaboration** — other engineers can understand the configuration more easily during code review.
+- **Version control** — individual configuration changes can be tracked through Git.
+
+### 12.4 Terraform Configuration Responsibilities
+
+The main Terraform files work together as follows:
+
+    providers.tf
+         |
+         v
+    variables.tf
+         |
+         v
+       main.tf
+         |
+         v
+      outputs.tf
+
+`providers.tf` establishes the Terraform and AWS provider configuration.
+
+`variables.tf` defines the inputs required to parameterize the infrastructure.
+
+`main.tf` consumes those variables to define the EC2 infrastructure and provisioner workflow.
+
+`outputs.tf` exposes useful infrastructure information after deployment, including the EC2 public and private IP addresses.
+
+### 12.5 Server Configuration Separation
+
+The `web.sh` script separates operating-system and application configuration from the main Terraform resource definition.
+
+The Terraform workflow transfers and executes the script through provisioners.
+
+The script is responsible for:
+
+- Updating the Ubuntu package index.
+- Installing Apache.
+- Enabling Apache.
+- Starting Apache.
+- Removing the default Apache page.
+- Creating the custom project web page.
+
+This approach keeps the server configuration commands together in one executable script rather than embedding all operating-system commands directly into the Terraform resource.
+
+### 12.6 Repository Security and Hygiene
+
+Repository hygiene is an important part of Infrastructure as Code.
+
+The project `.gitignore` excludes files that should remain local or should not be committed to the repository.
+
+The configured `.gitignore` includes:
+
+    .terraform/
+    *.tfstate
+    *.tfstate.*
+    *.tfstate.lock.info
+    *.pem
+    private_ips.txt
+    crash.log
+    crash.*.log
+    terraform.tfvars
+    variable-plan-output.txt
+
+These exclusions prevent the following categories of information or generated artifacts from being committed:
+
+| Excluded Item | Reason |
+|---|---|
+| `.terraform/` | Contains Terraform working-directory data and downloaded provider components |
+| `*.tfstate` | Terraform state may contain infrastructure information that should not be exposed unnecessarily |
+| `*.tfstate.*` | Prevents related Terraform state files from being committed |
+| `*.tfstate.lock.info` | Prevents local Terraform state lock information from being committed |
+| `*.pem` | Prevents SSH private keys from being committed |
+| `private_ips.txt` | Prevents locally generated infrastructure output from being committed |
+| `crash.log` | Prevents Terraform crash logs from being committed |
+| `crash.*.log` | Prevents additional Terraform crash
