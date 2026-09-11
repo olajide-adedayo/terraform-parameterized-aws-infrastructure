@@ -1088,3 +1088,204 @@ This project provided practical lessons across several areas of AWS and Terrafor
 «Infrastructure as Code is not simply about creating resources. A mature DevOps workflow must also account for compatibility, connectivity, configuration, validation, troubleshooting, reconciliation, lifecycle changes, and controlled destruction.»
 
 The troubleshooting experience in this project transformed the Terraform configuration from a simple provisioning exercise into a practical demonstration of infrastructure lifecycle management and operational problem-solving.
+
+
+---
+
+## 11. Infrastructure Lifecycle Management
+
+This project demonstrates the complete lifecycle of Terraform-managed AWS infrastructure, from defining the desired state through provisioning, configuration, validation, troubleshooting, reconciliation, and controlled destruction.
+
+The lifecycle was managed through Terraform rather than relying on manual AWS Console operations.
+
+### 11.1 Infrastructure Lifecycle
+
+The overall infrastructure lifecycle followed this workflow:
+
+    Define
+       |
+       v
+    Initialize
+       |
+       v
+    Validate
+       |
+       v
+    Plan
+       |
+       v
+    Apply
+       |
+       v
+    Provision
+       |
+       v
+    Configure
+       |
+       v
+    Validate
+       |
+       v
+    Troubleshoot
+       |
+       v
+    Reconcile
+       |
+       v
+    Destroy
+
+This workflow demonstrates that Infrastructure as Code is not limited to resource creation. It also includes controlled changes, validation, recovery, reconciliation, and cleanup.
+
+### 11.2 Lifecycle Stages
+
+| Stage | Terraform Operation | Purpose |
+|---|---|---|
+| Define | Terraform configuration | Describe the desired AWS infrastructure state |
+| Initialize | `terraform init` | Initialize the working directory and download required providers |
+| Validate | `terraform validate` | Check the Terraform configuration for syntax and configuration errors |
+| Plan | `terraform plan` | Preview the infrastructure changes Terraform intends to make |
+| Apply | `terraform apply` | Create or modify the AWS infrastructure |
+| Configure | Terraform provisioners | Configure the provisioned EC2 server and install Apache |
+| Validate | Terraform outputs, SSH, service checks, and browser testing | Confirm that the infrastructure and application are functioning correctly |
+| Troubleshoot | Terraform and AWS troubleshooting | Identify and resolve infrastructure, connectivity, and provisioning issues |
+| Reconcile | `terraform apply -replace=aws_instance.app_server` | Replace and reconcile an EC2 resource affected by provisioning failure |
+| Destroy | `terraform destroy` | Remove the temporary AWS infrastructure and prevent unnecessary ongoing costs |
+
+### 11.3 Infrastructure Provisioning
+
+Terraform created and configured the required AWS infrastructure for the project.
+
+The infrastructure included:
+
+- Amazon EC2 instance
+- AWS security group
+- EC2 networking configuration
+- SSH access configuration
+- Apache web server environment
+- Terraform provisioners for server configuration
+- Terraform outputs for infrastructure information
+
+The EC2 instance was configured using parameterized Terraform variables rather than hard-coding all infrastructure values directly into the resource configuration.
+
+### 11.4 Infrastructure Configuration
+
+After the EC2 instance was provisioned, Terraform provisioners were used to perform server configuration tasks.
+
+The configuration workflow included:
+
+    EC2 Instance Created
+            |
+            v
+    SSH Connection Established
+            |
+            v
+    web.sh Transferred
+            |
+            v
+    Remote Provisioning
+            |
+            v
+    Apache Installed
+            |
+            v
+    Apache Started
+            |
+            v
+    Custom Web Page Created
+            |
+            v
+    Application Validated
+
+The `file` provisioner transferred the configuration script to the EC2 instance.
+
+The `remote-exec` provisioner then executed the script remotely to install and configure Apache.
+
+The `local-exec` provisioner captured the EC2 private IP address locally for validation and demonstration purposes.
+
+### 11.5 Infrastructure Reconciliation
+
+During deployment, a provisioner failure caused the EC2 resource to become tainted.
+
+Rather than manually deleting and recreating the infrastructure through the AWS Console, Terraform was used to reconcile the resource.
+
+The following command was used:
+
+    terraform apply -replace=aws_instance.app_server
+
+Terraform successfully replaced the affected EC2 instance.
+
+The final result was:
+
+    Apply complete! Resources: 1 added, 0 changed, 1 destroyed.
+
+This demonstrated an important Infrastructure as Code principle:
+
+> Terraform can be used not only to provision infrastructure, but also to reconcile infrastructure when the existing resource no longer matches the expected operational state.
+
+### 11.6 Infrastructure Validation
+
+After provisioning and reconciliation, the infrastructure was validated at multiple levels.
+
+Validation included:
+
+- Terraform outputs
+- EC2 instance state
+- EC2 instance type
+- AMI compatibility
+- Security group configuration
+- SSH connectivity
+- Terraform provisioner execution
+- Apache installation
+- Apache service status
+- Private IP address
+- Public IP address
+- Browser-based HTTP validation
+
+The final infrastructure produced the following validated Terraform outputs:
+
+    instance_public_ip  = "44.200.225.123"
+    instance_private_ip = "172.31.3.119"
+
+The private IP was also captured locally:
+
+    172.31.3.119
+
+SSH connectivity to the EC2 instance was successfully verified, Apache was confirmed to be running, and the custom web page was successfully accessed through the browser.
+
+### 11.7 Infrastructure Destruction
+
+After completing validation and capturing the required project evidence, the AWS infrastructure was intentionally destroyed.
+
+The Terraform command used was:
+
+    terraform destroy
+
+Terraform successfully removed the infrastructure:
+
+    Destroy complete! Resources: 2 destroyed.
+
+This confirmed that the infrastructure could be created and removed through the same Infrastructure as Code workflow.
+
+Destroying temporary infrastructure also demonstrated practical AWS cost-management awareness by ensuring that unused EC2 resources were not left running unnecessarily.
+
+### 11.8 Lifecycle Management Principles Demonstrated
+
+This project demonstrated the following Infrastructure as Code lifecycle principles:
+
+- **Declarative infrastructure** — infrastructure requirements were defined through Terraform configuration.
+- **Plan before apply** — Terraform plans were reviewed before infrastructure changes were applied.
+- **Parameterization** — reusable infrastructure values were managed through Terraform variables.
+- **Controlled provisioning** — EC2 infrastructure was created through Terraform rather than manual console configuration.
+- **Post-deployment validation** — infrastructure and application behavior were verified after deployment.
+- **Troubleshooting** — AWS, Terraform, networking, SSH, and provisioning issues were investigated systematically.
+- **Resource reconciliation** — failed infrastructure was replaced using Terraform's controlled replacement workflow.
+- **State alignment** — Terraform state was used to track and reconcile managed resources.
+- **Controlled destruction** — temporary infrastructure was removed through `terraform destroy`.
+- **Cost awareness** — unused AWS resources were destroyed after project validation.
+- **Version-controlled infrastructure** — Terraform configuration was maintained in Git and GitHub.
+
+### 11.9 Engineering Lesson
+
+> **Infrastructure as Code is not limited to provisioning resources. A mature DevOps workflow manages the complete infrastructure lifecycle — definition, planning, provisioning, configuration, validation, troubleshooting, reconciliation, change management, and controlled destruction.**
+
+This project demonstrated that Terraform can serve as a consistent control mechanism for managing infrastructure throughout its operational lifecycle rather than being used only as a tool for initial resource creation.
