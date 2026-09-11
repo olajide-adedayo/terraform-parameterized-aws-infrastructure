@@ -2110,3 +2110,290 @@ Instead, successful infrastructure delivery means:
     Infrastructure Cleaned Up
 
 This project therefore demonstrates an end-to-end Infrastructure as Code validation strategy rather than simply demonstrating how to create an EC2 instance with Terraform.
+
+
+---
+
+## 16. Implementation Evidence & Screenshots
+
+This section provides visual evidence of the Terraform implementation, infrastructure planning, provisioning, outputs, server configuration, and final application validation.
+
+The screenshots are stored in the repository under the `screenshots/` directory and are referenced using relative Markdown paths so that they render directly on GitHub.
+
+The evidence follows the actual implementation sequence of the project.
+
+---
+
+### 16.1 Terraform Variables and Initial Planning
+
+The first stage of the implementation was to define the infrastructure parameters used by Terraform and verify the resulting execution plan.
+
+![Terraform variables and initial plan](screenshots/02-project3-tfvars-variable-plan.png)
+
+**Evidence:** Terraform variable configuration and infrastructure planning.
+
+This demonstrates the parameterized approach used to control deployment-specific values rather than hard-coding all infrastructure settings directly into the resource configuration.
+
+---
+
+### 16.2 Sensitive Configuration Handling
+
+The project separates sensitive or machine-specific configuration from the reusable Terraform configuration.
+
+![Sensitive variable configuration and Terraform plan](screenshots/03-project3-sensitive-variable-plan.png)
+
+**Evidence:** Sensitive or environment-specific Terraform variable handling.
+
+The project uses `terraform.tfvars` for local values while keeping the reusable example configuration in `terraform.tfvars.example`.
+
+Sensitive local configuration is excluded from version control through `.gitignore`.
+
+---
+
+### 16.3 Final Parameterized Configuration
+
+After resolving the configuration requirements, the final parameterized values were validated through Terraform planning.
+
+![Final Terraform variable configuration and plan](screenshots/04-project3-final-variable-plan.png)
+
+**Evidence:** Final parameterized infrastructure configuration.
+
+The configuration includes parameters such as:
+
+- AWS region
+- Availability Zone
+- EC2 instance type
+- EC2 instance name
+- SSH user
+- Private key path
+- EC2 key pair
+
+This demonstrates that the infrastructure configuration can be controlled through Terraform variables rather than modifying the resource definition for every deployment.
+
+---
+
+### 16.4 Terraform Provisioners in the Execution Plan
+
+The project uses Terraform provisioners to demonstrate automated server configuration after EC2 provisioning.
+
+![Terraform provisioners plan](screenshots/05-project3-provisioners-plan.png)
+
+**Evidence:** Terraform plan containing the EC2 provisioning workflow.
+
+The implementation includes:
+
+- `file` provisioner
+- `remote-exec` provisioner
+- `local-exec` provisioner
+
+The `file` provisioner transfers `web.sh` to the EC2 instance, `remote-exec` executes the configuration remotely, and `local-exec` records the EC2 private IP locally.
+
+---
+
+### 16.5 EC2 Key Pair and Resource Replacement
+
+The EC2 instance requires a valid AWS key pair for SSH-based Terraform provisioner connections.
+
+![EC2 key pair and replacement plan](screenshots/06-project3-provisioners-key-pair-replacement-plan.png)
+
+**Evidence:** EC2 key-pair configuration and controlled resource replacement.
+
+The Terraform configuration uses:
+
+    key_name = var.key_name
+
+The key pair was required for successful SSH connectivity between Terraform and the Ubuntu EC2 instance.
+
+The project also demonstrated Terraform's ability to replace an EC2 resource when the existing resource could no longer be reconciled successfully.
+
+---
+
+### 16.6 Security Group Configuration
+
+Network access was validated as part of the EC2 provisioning workflow.
+
+![Terraform security group plan](screenshots/07-project3-provisioners-security-group-plan.png)
+
+**Evidence:** Security group configuration represented in the Terraform workflow.
+
+The demonstration configuration allowed:
+
+| Protocol | Port | Source | Purpose |
+|---|---:|---|---|
+| TCP | 22 | `0.0.0.0/0` | SSH administration |
+| TCP | 80 | `0.0.0.0/0` | HTTP access |
+
+This configuration was intentionally used for the hands-on demonstration.
+
+For production workloads, SSH access should be restricted to trusted sources or replaced where appropriate with mechanisms such as AWS Systems Manager Session Manager.
+
+---
+
+### 16.7 Successful Terraform Apply
+
+After resolving the configuration and connectivity issues encountered during implementation, Terraform successfully applied the infrastructure configuration.
+
+![Successful Terraform apply](screenshots/08-project3-provisioners-apply-success.png)
+
+**Evidence:** Successful Terraform infrastructure deployment.
+
+The successful apply demonstrated that Terraform could:
+
+1. Provision the EC2 instance.
+2. Establish the required provisioning connection.
+3. Transfer the server configuration script.
+4. Execute the server configuration.
+5. Complete the declared infrastructure workflow.
+
+---
+
+### 16.8 Web Application Verification
+
+After Terraform completed the server configuration, the Apache web server was validated through HTTP access.
+
+![Apache web page verification](screenshots/09-project3-provisioners-web-verification.png)
+
+**Evidence:** Successful browser-level verification of the provisioned web server.
+
+The displayed page confirms that the Apache service was configured successfully and that the custom web content was deployed to the EC2 instance.
+
+This provides application-level validation beyond simply confirming that Terraform completed successfully.
+
+---
+
+### 16.9 Terraform Outputs
+
+Terraform outputs were used to expose important attributes of the provisioned EC2 infrastructure.
+
+![Terraform outputs plan](screenshots/10-project3-outputs-plan.png)
+
+**Evidence:** Terraform output configuration and planning.
+
+The project defines outputs for:
+
+- EC2 public IP address
+- EC2 private IP address
+
+These outputs make important infrastructure information available after deployment without requiring manual inspection of the AWS console.
+
+---
+
+### 16.10 Terraform Output Results
+
+The final Terraform output values were verified after successful infrastructure deployment.
+
+![Terraform output results](screenshots/11-project3-outputs-result.png)
+
+**Evidence:** Actual Terraform-generated EC2 network addresses.
+
+The validated outputs included:
+
+    instance_public_ip  = "44.200.225.123"
+    instance_private_ip = "172.31.3.119"
+
+The private IP was also captured locally by the `local-exec` provisioner in:
+
+    private_ips.txt
+
+This provided an additional validation point between Terraform outputs and the generated local file.
+
+---
+
+### 16.11 Apache Service Validation
+
+The Apache service was checked directly on the Ubuntu EC2 instance after provisioning.
+
+![Apache service running](screenshots/12-project3-apache-service-running.png)
+
+**Evidence:** Apache service confirmed as active and running.
+
+This validation confirmed that the server configuration executed successfully and that the web server was operational at the operating-system service level.
+
+The validation therefore covered more than infrastructure creation; it confirmed that the expected workload was actually running on the provisioned server.
+
+---
+
+### 16.12 Final Apache Web Verification
+
+The final application validation was performed through the browser using the EC2 public IP address.
+
+![Final Apache web verification](screenshots/13-project3-final-apache-web-verification.png)
+
+**Evidence:** Final successful browser verification of the deployed Apache application.
+
+The custom page displayed the Terraform project information and confirmed that Apache had been provisioned through the Terraform workflow.
+
+This represents the final application-level validation milestone.
+
+---
+
+### 16.13 End-to-End Evidence Flow
+
+The screenshots collectively demonstrate the progression from infrastructure configuration to a functioning AWS workload:
+
+    Parameterized Variables
+            ↓
+    Terraform Plan
+            ↓
+    Provisioner Configuration
+            ↓
+    EC2 Key Pair Configuration
+            ↓
+    Security Group Configuration
+            ↓
+    Terraform Apply
+            ↓
+    Apache Provisioning
+            ↓
+    Terraform Outputs
+            ↓
+    Apache Service Validation
+            ↓
+    Browser Verification
+
+This provides a traceable evidence chain from Infrastructure as Code to the resulting running application.
+
+---
+
+### 16.14 Evidence Summary
+
+| Evidence Area | Screenshot | What It Demonstrates |
+|---|---|---|
+| Terraform Variables | `02-project3-tfvars-variable-plan.png` | Parameterized infrastructure configuration |
+| Sensitive Configuration | `03-project3-sensitive-variable-plan.png` | Local/environment-specific variable handling |
+| Final Variables | `04-project3-final-variable-plan.png` | Finalized deployment parameters |
+| Provisioners | `05-project3-provisioners-plan.png` | Terraform provisioner configuration |
+| Key Pair | `06-project3-provisioners-key-pair-replacement-plan.png` | SSH key-pair configuration and replacement workflow |
+| Security Group | `07-project3-provisioners-security-group-plan.png` | EC2 network access configuration |
+| Terraform Apply | `08-project3-provisioners-apply-success.png` | Successful infrastructure provisioning |
+| Web Verification | `09-project3-provisioners-web-verification.png` | HTTP/application validation |
+| Outputs Plan | `10-project3-outputs-plan.png` | Terraform output configuration |
+| Outputs Result | `11-project3-outputs-result.png` | Actual infrastructure output values |
+| Apache Service | `12-project3-apache-service-running.png` | Operating-system service validation |
+| Final Web Verification | `13-project3-final-apache-web-verification.png` | Final application-level validation |
+
+---
+
+### 16.15 Portfolio Evidence Principle
+
+The screenshots are not intended to replace the Terraform source code.
+
+The Terraform configuration remains the primary implementation artifact, while the screenshots provide visual evidence of the actual deployment and validation process.
+
+Together, the repository provides:
+
+**Infrastructure as Code**
+
+→ **Execution Plan**
+
+→ **AWS Provisioning**
+
+→ **Server Configuration**
+
+→ **Infrastructure Outputs**
+
+→ **Service Validation**
+
+→ **Application Validation**
+
+This combination demonstrates practical Infrastructure as Code implementation rather than a code-only Terraform example.
