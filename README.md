@@ -788,18 +788,19 @@ This project involved several real-world infrastructure and connectivity issues 
 
 The troubleshooting process provided practical experience beyond simply writing Terraform configuration. Each issue required identifying the failure point, determining the underlying cause, applying a controlled resolution, and validating the infrastructure again.
 
-10.1 Troubleshooting Summary
+## 10.1 Troubleshooting Summary
 
-Issue| Root Cause| Resolution
-EC2 instance creation failed| The selected Ubuntu AMI architecture was incompatible with the selected EC2 instance type| Replaced the incompatible AMI with an architecture-compatible Ubuntu AMI
-Terraform could not access the SSH private key| Windows path formatting caused the private key path to be interpreted incorrectly| Corrected the Terraform private key path
-EC2 instance had no usable key pair configuration| The required EC2 key pair was not initially associated with the instance| Added the required EC2 key pair configuration
-Terraform AWS API connectivity failed| DNS and network connectivity problems affected communication with AWS endpoints| Investigated DNS and network connectivity before retrying Terraform operations
-File provisioner SSH connection timed out| Temporary network connectivity prevented Terraform from establishing SSH access to the EC2 instance| Verified the instance, public IP, security group, SSH port, key pair, and direct SSH connectivity
-Provisioner execution failed during EC2 replacement| The replacement instance was temporarily unreachable during provisioning| Verified direct SSH connectivity and used Terraform's controlled replacement workflow
-HTTP service was initially unreachable| The EC2 infrastructure state and public IP address had changed during lifecycle operations| Revalidated the active instance, public IP, security group, and Apache service
-Terraform resource became tainted| A provisioner failure caused Terraform to mark the EC2 resource for replacement| Used Terraform's resource replacement workflow to recreate the instance
-Public IP address changed after lifecycle operations| A standard EC2 public IPv4 address is not guaranteed to remain the same through certain instance lifecycle operations| Rechecked Terraform outputs and used the current public IP for validation
+| Issue | Root Cause | Resolution |
+|---|---|---|
+| EC2 instance creation failed | The selected Ubuntu AMI architecture was incompatible with the selected EC2 instance type | Replaced the incompatible AMI with an architecture-compatible Ubuntu AMI |
+| Terraform could not access the SSH private key | Windows path formatting caused the private key path to be interpreted incorrectly | Corrected the Terraform private key path |
+| EC2 instance had no usable key pair configuration | The required EC2 key pair was not initially associated with the instance | Added the required EC2 key pair configuration |
+| Terraform AWS API connectivity failed | DNS and network connectivity problems affected communication with AWS endpoints | Investigated DNS and network connectivity before retrying Terraform operations |
+| File provisioner SSH connection timed out | Temporary network connectivity prevented Terraform from establishing SSH access to the EC2 instance | Verified the instance, public IP, security group, SSH port, key pair, and direct SSH connectivity |
+| Provisioner execution failed during EC2 replacement | The replacement instance was temporarily unreachable during provisioning | Verified direct SSH connectivity and used Terraform's controlled replacement workflow |
+| HTTP service was initially unreachable | The EC2 infrastructure state and public IP address had changed during lifecycle operations | Revalidated the active instance, public IP, security group, and Apache service |
+| Terraform resource became tainted | A provisioner failure caused Terraform to mark the EC2 resource for replacement | Used Terraform's resource replacement workflow to recreate the instance |
+| Public IP address changed after lifecycle operations | A standard EC2 public IPv4 address is not guaranteed to remain the same through certain instance lifecycle operations | Rechecked Terraform outputs and used the current public IP for validation |
 
 10.2 AMI and Instance Architecture Compatibility
 
